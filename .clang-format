@@ -1,0 +1,26 @@
+﻿---
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignOperands: 'true'
+AlignTrailingComments: 'true'
+AllowAllParametersOfDeclarationOnNextLine: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: 'false'
+AlwaysBreakAfterReturnType: All
+BinPackArguments: 'false'
+BreakBeforeBraces: Linux
+DerivePointerAlignment: 'false'
+IndentCaseLabels: 'false'
+IndentWidth: '8'
+Language: Cpp
+MaxEmptyLinesToKeep: '1'
+PointerAlignment: Right
+SortIncludes: 'true'
+SpaceBeforeParens: Always
+TabWidth: '8'
+UseTab: Always
+
+...
