@@ -35,12 +35,10 @@ Depends: ${misc:Depends},
 Recommends: python3
 Breaks: gir1.2-dfu-1.0 (<< 0.9.7-1),
 	libdfu1 (<< 0.9.7-1),
-	libdfu-dev (<< 0.9.7-1),
-	fwupdate (<< 11)
+	libdfu-dev (<< 0.9.7-1)
 Replaces: gir1.2-dfu-1.0 (<< 0.9.7-1),
 	  libdfu1 (<< 0.9.7-1),
-	  libdfu-dev (<< 0.9.7-1),
-	  fwupdate (<< 11)
+	  libdfu-dev (<< 0.9.7-1)
 Provides: fwupdate
 Multi-Arch: foreign
 Description: Firmware update daemon
