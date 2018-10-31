@@ -100,7 +100,7 @@ E: Unable to correct problems, you have held broken packages.
 From `master` branch:
 * Debian-x86_64 - Dockerfile build succesfully, DEB package failed (missing xmlb
   dependency -> required changes in `dependencies.xml` for libxmlb-dev section,
-  TODO: check packages: libxmlb, libxmlbird-dev, libxmlbird1)
+  checked packages: libxmlbird-dev, libxmlbird1)
 
 * Ubuntu-x86_64 - Dockerfile build succesfully, DEB package build succesfully (
   required commenting libxmlb-dev section in `dependencies.xml`) but there is no
@@ -110,12 +110,14 @@ Local build without Docker
 ==========================
 
 > Boot to Wilk usb hard-drive on LT1000
-  login: root
-  password: debian
+  * login: root
+  * password: debian
 
+```
+cd /home/debian/fwupd
+meson build
+```
 
-Go to fwupd directory: `cd /home/debian/fwupd`
-Building fwupd project locally: `meson build`
 Install fwupd after succesfull compilation:
 
 ```
