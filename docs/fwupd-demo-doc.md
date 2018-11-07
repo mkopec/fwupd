@@ -1,6 +1,31 @@
 FWUPD Documentation
 ===================
 
+Build project manually on Ubuntu 18.04 on usb-stick with fwupd v1.0.6 version
+---------------------------------------------------
+
+Fwupd version v1.0.6 has `fwupdmgr` commands such as `hwids`, which helps with
+finding required hwID number for firmware files validation and e.g. BIOS version
+validation after firmware update.
+
+1. Boot LT1000 with Ubuntu 18.04 (actually Kingston G3).
+2. Send fwupd files from repo (branch 1.0.6)! e.g. via scp: `scp -r PATH_TO_FWUPD_DIR ubuntu@192.168.3.188:/home/ubuntu/`
+3. Update package list: `sudo apt-get update`
+4. Install required dependencies: `sudo apt-get install python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi libcolorhug-dev, libfwup-dev`
+5. Install meson: `sudo pip3 install meson`
+6. Go to `cd /home/ubuntu/fwupd`
+7. Build project: `meson build`
+8. Install daemon: `sudo ninja -C build install`
+9. Check installed version: `fwupdmgr --version`
+10. If you are getting error such as:
+
+```
+fwupdmgr: error while loading shared libraries: libfwupd.so.2: cannot open
+shared object file: No such file or directory.
+```
+
+Run: `sudo /sbin/ldconfig -v`
+
 Build with provided Dockerfile
 -----------------
 
@@ -110,7 +135,7 @@ Build Docker image manually (Ubuntu)
 2. Send fwupd files from repo (branch 1_1_X) e.g. via scp
 3. Type: `docker run --privileged --rm -it -v /PATH_TO_FWUPD_DIR:/home/fwupd ubuntu /bin/bash`
 4. Update package list: `apt-get update`
-5. Install required dependencies: `apt-get install python3 python3-pip python3-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi python3-gi-cairo`
+5. Install required dependencies: `apt-get install pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi`
 6. Install meson: `pip3 install meson`
 8. Go to `cd /home/fwupd`
 9. Build project: `meson build`
