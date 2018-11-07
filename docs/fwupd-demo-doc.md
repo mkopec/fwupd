@@ -1,7 +1,7 @@
 FWUPD Documentation
 ===================
 
-Build with Docker
+Build with provided Dockerfile
 -----------------
 
 #### Prepare fwupd repository (original not forked!)
@@ -12,7 +12,7 @@ cd fwupd
 git checkout 1_1_X
 ```
 
-#### Generate Dockerfile
+#### Generate Docker image
 
 ```
 cd contrib/ci
@@ -58,18 +58,7 @@ libfwupd2-dbgsym_1.1.3+r9+gbffdc91e_amd64.deb
 libfwupd-dev_1.1.3+r9+gbffdc91e_amd64.deb
 ```
 
-LT1000: Installation on Debian (usb-stick):
-
-```
-root@debian:/home/debian# apt install ./fwupd_1.1.3+r9+gbffdc91e_amd64.deb
-Reading package lists... Error!
-E: Sub-process Popen returned an error code (2)
-E: Encountered a section with no Package: header
-E: Problem with MergeList /home/debian/fwupd_1.1.3+r9+gbffdc91e_amd64.deb
-E: The package lists or status file could not be parsed or opened.
-```
-
-LT1000: Installation on Debian 4.14 netboot:
+LT1000: Installation on Debian 4.14 netboot / USB 3.0 stick:
 
 ```
 # apt install ./fwupd_1.1.3+r9+gbffdc91e_amd64.deb  
@@ -100,38 +89,68 @@ E: Unable to correct problems, you have held broken packages.
 From `master` branch:
 * Debian-x86_64 - Dockerfile build succesfully, DEB package failed (missing xmlb
   dependency -> required changes in `dependencies.xml` for libxmlb-dev section,
-  checked packages: libxmlbird-dev, libxmlbird1)
+  TODO: check packages: libxmlb, libxmlbird-dev, libxmlbird1)
 
 * Ubuntu-x86_64 - Dockerfile build succesfully, DEB package build succesfully (
   required commenting libxmlb-dev section in `dependencies.xml`) but there is no
-  built DEB packages in directory?
+  built DEB packages in directory -> it is possible to create snap from DEB
+  packages, but running: `cd snap && snapcraft` leads to error:
 
-Local build without Docker
-==========================
+  ```
+  Downloading parts list|
+  Failed to get part information: Cannot find the definition for part 'libefivar-fixpkgconfig'. If it is a remote part, run `snapcraft update` to refresh the remote parts cache. If it is a local part, make sure that it is defined in the `snapcraft.yaml`.
+  ```
 
-> Boot to Wilk usb hard-drive on LT1000
-  * login: root
-  * password: debian
+Build Docker image manually (Ubuntu)
+-------------------------------------
+
+1. Boot OS from any drive with installed Docker-CE.
+    * (TBD if required) `apt-get install dbus-user-session`
+    * `apt-get install python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom`
+2. Send fwupd files from repo (branch 1_1_X) e.g. via scp
+3. Type: `docker run --privileged --rm -it -v /PATH_TO_FWUPD_DIR:/home/fwupd ubuntu /bin/bash`
+4. Update package list: `apt-get update`
+5. Install required dependencies: `apt-get install python3 python3-pip python3-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi python3-gi-cairo`
+6. Install meson: `pip3 install meson`
+8. Go to `cd /home/fwupd`
+9. Build project: `meson build`
+10. Install daemon: `ninja -C build install`
+11. If you are getting error such as:
 
 ```
-cd /home/debian/fwupd
-meson build
+fwupdmgr: error while loading shared libraries: libfwupd.so.2: cannot open
+shared object file: No such file or directory.
 ```
 
-Install fwupd after succesfull compilation:
+Run: `/sbin/ldconfig -v`
+
+Build docker image with custom Dockerfile / uploaded `docker-image.tar`
+-----------------------------------------
+1. Go to directory with custom `Dockerfile`: `cd contrib/ci`
+2. Build Docker image: `docker build -t ubuntu-fwupd .` and make `.tar` archive by
+   running `docker save ubuntu-fwupd > ubuntu-fwupd.tar`
+    * or download Docker image `ubuntu-fwupd.tar` from 3mdeb cloud (TBD)
+3. Upload `ubuntu-fwupd.tar` to LT1000 OS with preinstalled Docker (e.g via scp)
+3. Login to LT1000 OS.
+4. Load docker image: `docker load -i ubuntu_fwupd.tar`
+5. Send required fwupd files from git repo (branch 1_1_X)
+6. `cd fwupd`
+7. Start docker: `docker run --privileged --rm -it -v $PWD:/home/fwupd ubuntu-fwupd:latest /bin/bash`
+8. Build fwupd project: `meson build`
+9. Instal fwupd daemon: `ninja -C build install`
+10*. If you are getting error such as:
 
 ```
-cd build
-meson install
+fwupdmgr: error while loading shared libraries: libfwupd.so.2: cannot open
+shared object file: No such file or directory.
 ```
 
-Error output
+Run: `/sbin/ldconfig -v`
 
-```
-Installing /home/debian/fwupd/contrib/firmware-packager/firmware-packager to /usr/local/share/fwupd
-Running custom install script '/root/.local/bin/meson --internal gtkdoc --sourcedir=/home/debian/fwu'
-Failed to run install script '/root/.local/bin/meson --internal gtkdoc --sourcedir=/home/debian/fwup'
-```
+When trying to run any `fwupdmgr` commands, there is an error with D-Bus
+connection, while operating in Docker container.
+
+> TODO: try Ubuntu Docker image built on [solita/ubuntu-systemd](https://hub.docker.com/r/solita/ubuntu-systemd/)
 
 LVFS
 ====
