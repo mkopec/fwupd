@@ -1,20 +1,26 @@
 FWUPD Documentation
 ===================
 
-Build project manually on Ubuntu 18.04 on usb-stick with fwupd v1.0.6 version
+Build project manually on Ubuntu 18.04 on usb-stick with fwupd v1.1.2 version
 ---------------------------------------------------
 
-Fwupd version v1.0.6 has `fwupdmgr` commands such as `hwids`, which helps with
+Fwupd version `1.0.6` has `fwupdmgr` commands such as `hwids`, which helps with
 finding required hwID number for firmware files validation and e.g. BIOS version
 validation after firmware update.
 
+Fwupd version >= `1.1.2` has implemented flashrom plugin which is mandatory for
+this demo.
+
 1. Boot LT1000 with Ubuntu 18.04 (actually Kingston G3).
-2. Send fwupd files from repo (branch 1.0.6)! e.g. via scp: `scp -r PATH_TO_FWUPD_DIR ubuntu@192.168.3.188:/home/ubuntu/`
+2. Send fwupd files from repo e.g. via scp: `scp -r PATH_TO_FWUPD_DIR ubuntu@192.168.3.188:/home/ubuntu/`
+> whitelist LT1000 in /home/ubuntu/fwupd/plugins/flashrom/flashrom.quirk
+> add firmware.LT1000.metainfo.xml to /home/ubuntu/fwupd/plugins/flashrom/example
+
 3. Update package list: `sudo apt-get update`
 4. Install required dependencies: `sudo apt-get install python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi libcolorhug-dev, libfwup-dev`
 5. Install meson: `sudo pip3 install meson`
 6. Go to `cd /home/ubuntu/fwupd`
-7. Build project: `meson build`
+7. Build project: `sudo meson build`
 8. Install daemon: `sudo ninja -C build install`
 9. Check installed version: `fwupdmgr --version`
 10. If you are getting error such as:
@@ -25,6 +31,10 @@ shared object file: No such file or directory.
 ```
 
 Run: `sudo /sbin/ldconfig -v`
+
+After succesfull installation there is possibility to run daemon in --verbose
+(debug) mode: `sudo /usr/lib/fwupd/fwupd --verbose` (one terminal will work as
+debug monitor, run commands in another).
 
 Build with provided Dockerfile
 -----------------
@@ -203,15 +213,49 @@ device and firmware. You can create a cabinet archives using `makecab.exe` on
 Windows and `gcab` on Linux.
 
 It is recommended you name the archive with the vendor, device and version
-number, e.g. `3mdeb-LT1000-1.2.3.cab` and is suggested that the files inside the
-cab file have the same basename, for example:
+number, e.g. `Libretrend-LT1000-v4.8.0.2.cab` and is suggested that the files
+inside the cab file have the same basename, for example:
 
 ```
    3mdeb-LT1000-1.2.3.cab
-    |- flashrom.LT1000.firmware.rom
-    \- flashrom.LT1000.firmware.metainfo.xml
+    |- firmware.LT1000.v4.8.0.2.bin
+    \- firmware.LT1000.metainfo.xml
 ```
 
 For demo purposes, there will be uploaded two binaries:
 * LT1000-v4.8.0.2.rom
 * LT1000-v4.8.0.3.rom
+
+#### fwupdmgr hwids
+
+```
+Computer Information
+--------------------
+BiosVendor: coreboot
+BiosVersion: 4.8-1476-g6c93c140b8
+BiosMajorRelease: 4
+BiosMinorRelease:
+Manufacturer: Libretrend
+ProductName: LT1000
+EnclosureKind: 3
+BaseboardManufacturer: Libretrend
+BaseboardProduct: LT1000
+
+Hardware IDs
+------------
+not available as 'Family' unknown
+not available as 'Family' unknown
+{5f72bebc-c402-5019-bf95-da6a1a04284f}   <- Manufacturer + ProductName + BiosVendor + BiosVersion + BiosMajorRelease + BiosMinorRelease
+not available as 'Family' unknown
+not available as 'Family' unknown
+not available as 'Family' unknown
+not available as 'ProductSku' unknown
+not available as 'ProductSku' unknown
+{8ce47137-4545-5f7d-b3ed-f5a9d87e6ff4}   <- Manufacturer + ProductName + BaseboardManufacturer + BaseboardProduct
+{52b68c34-6b31-5ecc-8a5c-de37e666ccd5}   <- Manufacturer + ProductName
+not available as 'Family' unknown
+not available as 'Family' unknown
+{2f2ffdda-6829-5bb0-bb79-afa8356df791}   <- Manufacturer + EnclosureKind
+{5e46dccd-6bae-58ab-858d-81ba3b5e6d0d}   <- Manufacturer + BaseboardManufacturer + BaseboardProduct
+{88e53da1-3387-560d-b811-50733d8ae2b4}   <- Manufacturer
+```
