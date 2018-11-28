@@ -1,29 +1,43 @@
 FWUPD Documentation
 ===================
 
-Build project manually on Ubuntu 18.04 on usb-stick with fwupd v1.1.2 version
----------------------------------------------------
-
-Fwupd version `1.0.6` has `fwupdmgr` commands such as `hwids`, which helps with
-finding required hwID number for firmware files validation and e.g. BIOS version
-validation after firmware update.
+`Working method` - build manually on Ubuntu 18.04 from hard-drive
+-----------------------------------------------------------------
 
 Fwupd version >= `1.1.2` has implemented flashrom plugin which is mandatory for
 this demo.
 
-1. Boot LT1000 with Ubuntu 18.04 (actually Kingston G3).
-2. Send fwupd files from repo e.g. via scp: `scp -r PATH_TO_FWUPD_DIR ubuntu@192.168.3.188:/home/ubuntu/`
-> whitelist LT1000 in /home/ubuntu/fwupd/plugins/flashrom/flashrom.quirk
-> add firmware.LT1000.metainfo.xml to /home/ubuntu/fwupd/plugins/flashrom/example
+1. Boot LT1000 with Ubuntu 18.04 (not tested on 16.04).
+2. Login as `root` or normal user (e.g. l:`ubuntu`, p:`ubuntu`)
+> if you login as normal user, to get root permission type: `sudo -i`
+> by default root login in Ubuntu is disabled, to enable it, run:
+`sudo passwd root`, set appropriate password and reboot.
 
 3. Update package list: `sudo apt-get update`
-4. Install required dependencies: `sudo apt-get install python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi libcolorhug-dev, libfwup-dev`
-5. Install meson: `sudo pip3 install meson`
-6. Go to `cd /home/ubuntu/fwupd`
-7. Build project: `sudo meson build`
-8. Install daemon: `sudo ninja -C build install`
-9. Check installed version: `fwupdmgr --version`
-10. If you are getting error such as:
+3. Install required dependencies: `sudo apt-get install git python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi libcolorhug-dev libfwup-dev libpci-dev libusb-dev`
+4. Install flashrom (v1.0 version):
+    * download [flashrom-1.0.tar.bz2](https://download.flashrom.org/releases/flashrom-1.0.tar.bz2)
+    * extract and install: `tar xjf flashrom-1.0.tar.bz2 && cd flashrom-1.0 && make install`
+    * check flashrom version (should be v1.0): `flashrom --version`
+
+5. Install meson: `sudo pip3 install meson`.
+
+6. Clone git repository and change branch:
+
+```
+cd /home/ubuntu/
+git clone https://github.com/3mdeb/fwupd.git
+cd fwupd && git checkout LT1000
+```
+
+7. Build project and install: `sudo meson build && sudo ninja -C build install`
+
+8. Download `3mdeb-embargo.conf` - [link](https://cloud.3mdeb.com/index.php/s/4TrxTZE4ejPYMpj)
+
+9. Move `3mdeb-embargo.conf` to /usr/local/etc/fwupd/remotes.d/
+
+10. Check installed version (should equal >= 1.2.1): `fwupdmgr --version`
+11. If you are getting error such as:
 
 ```
 fwupdmgr: error while loading shared libraries: libfwupd.so.2: cannot open
@@ -32,9 +46,57 @@ shared object file: No such file or directory.
 
 Run: `sudo /sbin/ldconfig -v`
 
-After succesfull installation there is possibility to run daemon in --verbose
-(debug) mode: `sudo /usr/lib/fwupd/fwupd --verbose` (one terminal will work as
+12. Refresh repositories: `fwupdmgr refresh`
+13. Check device (should output LT1000 platform info): `fwupdmgr get-devices`
+14. Check possible updates (v4.8.0.2 or v4.8.0.3): `fwupdmgr get-updates`
+15. Update firmware: `sudo fwupdmgr update`
+    * there is possibility to downgrade firmware: `sudo fwupdmgr downgrade`
+
+After successful installation there is possibility to run daemon in --verbose
+(debug) mode: `sudo /usr/local/libexec/fwupd/fwupd --verbose` (one terminal will work as
 debug monitor, run commands in another).
+
+LVFS
+====
+
+The metadata URLs can be used in `/usr/local/etc/fwupd/remotes.d/` to perform
+end-to-end tests. It is important to not share the embargo URL with external
+users if you want the firmware to remain hidden from the public. You also may
+need to do `fwupdmgr refresh` on each client to show new updates.
+
+|Description    |Public|URL                    |Custom Remote     |
+|:-------------:|:----:|:---------------------:|:----------------:|
+|Stable         |	Yes  |firmware.xml.gz        |not required      |
+|Testing        | Yes  |firmware-testing.xml.gz|not required      |
+|Embargo ‘3mdeb’| No   |firmware-3c81bfd       |3mdeb-embargo.conf|
+
+> End-to-end tests using the metadata can only be used with a custom /usr/local/etc/fwupd/remotes.d/3mdeb-embargo.conf file as this user account
+does not yet have permission to push to testing or stable.
+
+#### Uploading firmware
+
+All firmware is uploaded as a cabinet archive, which matches the Microsoft
+Update requirements. Along with the firmware binary, the LVFS expects the
+archive to contain at least one `.metainfo.xml` file that describes the target
+device and firmware. You can create a cabinet archives using `makecab.exe` on
+Windows and `gcab` on Linux.
+
+It is recommended you name the archive with the vendor, device and version
+number, e.g. `Libretrend-LT1000-v4.8.0.2.cab` and is suggested that the files
+inside the cab file have the same basename, for example:
+
+```
+   Libretrend-LT1000-v4.8.0.2.cab
+    |- firmware.LT1000.v4.8.0.2.bin
+    \- firmware.LT1000.metainfo.xml
+```
+
+For demo purposes, there will be uploaded two binaries:
+* LT1000-v4.8.0.2.bin
+* LT1000-v4.8.0.3.bin
+
+`Additional methods` - tested but problems occurred
+--------------------------------------------------
 
 Build with provided Dockerfile
 -----------------
@@ -69,7 +131,7 @@ If there is error with missing dependencies, try to update
 #### Docker package build results
 
 From `1_1_X` branch:
-* Debian-x86_64 - Dockerfile build succesfully, DEB package build (libxmlb not
+* Debian-x86_64 - Dockerfile build successfully, DEB package build (libxmlb not
   required / Richard said, that newest branch is exactly the same from the
   plugin point of view)
 
@@ -122,11 +184,11 @@ E: Unable to correct problems, you have held broken packages.
 ```
 
 From `master` branch:
-* Debian-x86_64 - Dockerfile build succesfully, DEB package failed (missing xmlb
+* Debian-x86_64 - Dockerfile build successfully, DEB package failed (missing xmlb
   dependency -> required changes in `dependencies.xml` for libxmlb-dev section,
   TODO: check packages: libxmlb, libxmlbird-dev, libxmlbird1)
 
-* Ubuntu-x86_64 - Dockerfile build succesfully, DEB package build succesfully (
+* Ubuntu-x86_64 - Dockerfile build successfully, DEB package build successfully (
   required commenting libxmlb-dev section in `dependencies.xml`) but there is no
   built DEB packages in directory -> it is possible to create snap from DEB
   packages, but running: `cd snap && snapcraft` leads to error:
@@ -187,46 +249,9 @@ connection, while operating in Docker container.
 
 > TODO: try Ubuntu Docker image built on [solita/ubuntu-systemd](https://hub.docker.com/r/solita/ubuntu-systemd/)
 
-LVFS
-====
-
-The metadata URLs can be used in /etc/fwupd/remotes.d to perform end-to-end
-tests. It is important to not share the embargo URL with external users if you
-want the firmware to remain hidden from the public. You also may need to do
-`fwupdmgr` refresh on each client to show new updates.
-
-|Description    |Public|URL                    |Custom Remote     |
-|:-------------:|:----:|:---------------------:|:----------------:|
-|Stable         |	Yes  |firmware.xml.gz        |not required      |
-|Testing        | Yes  |firmware-testing.xml.gz|not required      |
-|Embargo ‘3mdeb’| No   |firmware-3c81bfd       |3mdeb-embargo.conf|
-
-> End-to-end tests using the metadata can only be used with a custom /etc/fwupd/remotes.d/3mdeb-embargo.conf file as this user account does not yet
-have permission to push to testing or stable.
-
-#### Uploading firmware
-
-All firmware is uploaded as a cabinet archive, which matches the Microsoft
-Update requirements. Along with the firmware binary, the LVFS expects the
-archive to contain at least one `.metainfo.xml` file that describes the target
-device and firmware. You can create a cabinet archives using `makecab.exe` on
-Windows and `gcab` on Linux.
-
-It is recommended you name the archive with the vendor, device and version
-number, e.g. `Libretrend-LT1000-v4.8.0.2.cab` and is suggested that the files
-inside the cab file have the same basename, for example:
-
-```
-   3mdeb-LT1000-1.2.3.cab
-    |- firmware.LT1000.v4.8.0.2.bin
-    \- firmware.LT1000.metainfo.xml
-```
-
-For demo purposes, there will be uploaded two binaries:
-* LT1000-v4.8.0.2.rom
-* LT1000-v4.8.0.3.rom
-
 #### fwupdmgr hwids
+
+To list all GUIDs, type: `/usr/local/libexec/fwupd/fwupdtool hwids`
 
 ```
 Computer Information
