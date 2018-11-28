@@ -183,7 +183,7 @@ fu_plugin_update (FuPlugin *plugin,
 	if (tmpdir == NULL)
 		return FALSE;
 	firmware_fn = g_build_filename (tmpdir, "flashrom-firmware.bin", NULL);
-	if (!fu_common_set_contents_bytes (firmware_fn, g_bytes_new_from_bytes(blob_fw, 0x200, 0x800000), error))
+	if (!fu_common_set_contents_bytes (firmware_fn, blob_fw, error))
 		return FALSE;
 
 	/* use flashrom to write image */
