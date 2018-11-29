@@ -53,16 +53,16 @@ Run: `sudo /sbin/ldconfig -v`
     * there is possibility to downgrade firmware: `sudo fwupdmgr downgrade`
 
 After successful installation there is possibility to run daemon in --verbose
-(debug) mode: `sudo /usr/local/libexec/fwupd/fwupd --verbose` (one terminal will work as
-debug monitor, run commands in another).
+(debug) mode: `sudo /usr/local/libexec/fwupd/fwupd --verbose` (one terminal will
+work as debug monitor, run commands in another).
 
 LVFS
 ====
 
-The metadata URLs can be used in `/usr/local/etc/fwupd/remotes.d/` to perform
-end-to-end tests. It is important to not share the embargo URL with external
-users if you want the firmware to remain hidden from the public. You also may
-need to do `fwupdmgr refresh` on each client to show new updates.
+The metadata URLs can be used to perform end-to-end tests. It is important to
+not share the embargo URL with external users if you want the firmware to remain
+hidden from the public. You also may need to do `fwupdmgr refresh` on each
+client to show new updates.
 
 |Description    |Public|URL                    |Custom Remote     |
 |:-------------:|:----:|:---------------------:|:----------------:|
@@ -70,7 +70,8 @@ need to do `fwupdmgr refresh` on each client to show new updates.
 |Testing        | Yes  |firmware-testing.xml.gz|not required      |
 |Embargo ‘3mdeb’| No   |firmware-3c81bfd       |3mdeb-embargo.conf|
 
-> End-to-end tests using the metadata can only be used with a custom /usr/local/etc/fwupd/remotes.d/3mdeb-embargo.conf file as this user account
+> End-to-end tests using the metadata can only be used with a custom
+/usr/local/etc/fwupd/remotes.d/3mdeb-embargo.conf file as this user account
 does not yet have permission to push to testing or stable.
 
 #### Uploading firmware
@@ -97,6 +98,8 @@ For demo purposes, there will be uploaded two binaries:
 
 `Additional methods` - tested but problems occurred
 --------------------------------------------------
+
+Some methods are outdated in comparison with instruction above.
 
 Build with provided Dockerfile
 -----------------
