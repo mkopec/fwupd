@@ -50,7 +50,20 @@ Run: `sudo /sbin/ldconfig -v`
 13. Check device (should output LT1000 platform info): `fwupdmgr get-devices`
 14. Check possible updates (v4.8.0.2 or v4.8.0.3): `fwupdmgr get-updates`
 15. Update firmware: `sudo fwupdmgr update`
-    * there is possibility to downgrade firmware: `sudo fwupdmgr downgrade`
+    * if DMI table has firmware version presented in different version, first
+      try downgrading: `sudo fwupdmgr downgrade`, possible output:
+
+```
+Choose a release:
+1.	v4.8.0.3 (<p>Coreboot firmware version v4.8.0.3.</p>)
+2.	v4.8.0.2 (<p>Coreboot firmware version v4.8.0.2.</p>)
+
+```
+
+and type number of your choice.
+
+16. Verify changes: `sudo reboot` and after login run `fwupdmgr get-devices`,
+    firmware version should change.
 
 After successful installation there is possibility to run daemon in --verbose
 (debug) mode: `sudo /usr/local/libexec/fwupd/fwupd --verbose` (one terminal will
@@ -66,7 +79,7 @@ client to show new updates.
 
 |Description    |Public|URL                    |Custom Remote     |
 |:-------------:|:----:|:---------------------:|:----------------:|
-|Stable         |	Yes  |firmware.xml.gz        |not required      |
+|Stable         | Yes  |firmware.xml.gz        |not required      |
 |Testing        | Yes  |firmware-testing.xml.gz|not required      |
 |Embargo ‘3mdeb’| No   |firmware-3c81bfd       |3mdeb-embargo.conf|
 
