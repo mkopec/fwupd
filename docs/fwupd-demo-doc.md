@@ -16,8 +16,8 @@ this demo.
 3. Update package list: `sudo apt-get update`
 3. Install required dependencies: `sudo apt-get install git python3 python3-pip python3-gi-cairo python3-pil ninja-build flashrom pkg-config libglib2.0-dev gudev-1.0 libappstream-glib-dev libgusb-dev libsqlite3-dev libjson-glib-dev libpolkit-gobject-1-dev udev libgnutls28-dev libgpgme-dev gcab libefivar-dev libelf-dev libcairo2-dev libefiboot-dev libpango1.0-dev libsmbios-dev systemd gnutls-bin gtk-doc-tools libgirepository1.0-dev valac help2man gnu-efi libcolorhug-dev libfwup-dev libpci-dev libusb-dev`
 4. Install flashrom (v1.0 version):
-    * download [flashrom-1.0.tar.bz2](https://download.flashrom.org/releases/flashrom-1.0.tar.bz2)
-    * extract and install: `tar xjf flashrom-1.0.tar.bz2 && cd flashrom-1.0 && make install`
+    * download [flashrom-1.0.tar.bz2](https://download.flashrom.org/releases/flashrom-1.0.tar.bz2): `wget https://download.flashrom.org/releases/flashrom-1.0.tar.bz2`
+    * extract and install: `tar xjf flashrom-1.0.tar.bz2 && cd flashrom-1.0 && sudo make install && cd ..`
     * check flashrom version (should be v1.0): `flashrom --version`
 
 5. Install meson: `sudo pip3 install meson`.
@@ -30,21 +30,19 @@ git clone https://github.com/3mdeb/fwupd.git
 cd fwupd && git checkout LT1000
 ```
 
-7. Build project and install: `sudo meson build && sudo ninja -C build install`
+7. Build project and install: `sudo meson build && sudo ninja -C build install && cd ..`
 
-8. Download `3mdeb-embargo.conf` - [link](https://cloud.3mdeb.com/index.php/s/4TrxTZE4ejPYMpj)
+8. Download [3mdeb-embargo.conf](https://cloud.3mdeb.com/index.php/s/4TrxTZE4ejPYMpj) `wget https://cloud.3mdeb.com/index.php/s/4TrxTZE4ejPYMpj/download -O 3mdeb-embargo.conf`
 
-9. Move `3mdeb-embargo.conf` to /usr/local/etc/fwupd/remotes.d/
-
+9. Move 3mdeb config file: `sudo mv 3mdeb-embargo.conf /usr/local/etc/fwupd/remotes.d/`
 10. Check installed version (should equal >= 1.2.1): `fwupdmgr --version`
-11. If you are getting error such as:
-
+    * If you are getting error such as:
 ```
 fwupdmgr: error while loading shared libraries: libfwupd.so.2: cannot open
 shared object file: No such file or directory.
 ```
+    Run: `sudo /sbin/ldconfig -v` and try `fwupdmgr --version` again.
 
-Run: `sudo /sbin/ldconfig -v`
 
 12. Refresh repositories: `fwupdmgr refresh`
 13. Check device (should output LT1000 platform info): `fwupdmgr get-devices`
@@ -65,9 +63,11 @@ and type number of your choice.
 16. Verify changes: `sudo reboot` and after login run `fwupdmgr get-devices`,
     firmware version should change.
 
+17. Installation complete, you can freely upgrade and downgrade your firmware.
+
 After successful installation there is possibility to run daemon in --verbose
-(debug) mode: `sudo /usr/local/libexec/fwupd/fwupd --verbose` (one terminal will
-work as debug monitor, run commands in another).
+mode (for development debug purposes): `sudo /usr/local/libexec/fwupd/fwupd --verbose`
+(one terminal will work as debug monitor, run commands in another).
 
 LVFS
 ====
