@@ -1,0 +1,3 @@
+usr/share/qubes-fwupd/fwupd_usbvm_validate.py
+usr/share/qubes-fwupd/src/*
+usr/share/qubes-fwupd/test/*

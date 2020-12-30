@@ -198,3 +198,9 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, make | build-essential | dpkg-dev
 Description: Template for signed fwupd package
  This package is used to control code signing by the Debian signing
  service.
+
+Package: fwupd-qubes-vm-whonix
+Architecture: amd64
+Depends: gpg
+Description: Whonix support for Qubes OS
+ This package is used to download firmware updates and metadata via TOR.
