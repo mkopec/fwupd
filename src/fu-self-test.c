@@ -583,7 +583,8 @@ fu_engine_requirements_device_func (gconstpointer user_data)
 		"    <firmware compare=\"ge\" version=\"1.2.3\"/>"
 		"    <firmware compare=\"eq\" version=\"4.5.6\">bootloader</firmware>"
 		"    <firmware compare=\"regex\" version=\"USB:0xFFFF|DMI:Lenovo\">vendor-id</firmware>"
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 		"    <id compare=\"ge\" version=\"4.0.0\">org.kernel</id>"
 #endif
 		"  </requires>"

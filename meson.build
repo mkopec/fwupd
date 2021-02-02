@@ -246,7 +246,7 @@ if build_daemon
   endif
   udevdir = get_option('udevdir')
   if udevdir == ''
-    udev = dependency('udev')
+    udev = dependency('devd')
     udevdir = udev.get_pkgconfig_variable('udevdir')
   endif
 endif
@@ -347,8 +347,8 @@ endif
 
 if build_standalone and get_option('plugin_uefi_capsule')
   cairo = dependency('cairo')
-  fontconfig = cc.find_library('fontconfig')
-  freetype = cc.find_library('freetype')
+  fontconfig = dependency('fontconfig')
+  freetype = dependency('freetype')
   efiboot = dependency('efiboot')
   objcopy = find_program ('objcopy')
   readelf = find_program ('readelf')

@@ -2219,7 +2219,8 @@ fu_byte_array_set_size (GByteArray *array, guint length)
 gboolean
 fu_common_kernel_locked_down (void)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	gsize len = 0;
 	g_autofree gchar *dir = fu_common_get_path (FU_PATH_KIND_SYSFSDIR_SECURITY);
 	g_autofree gchar *fname = g_build_filename (dir, "lockdown", NULL);

@@ -6463,7 +6463,8 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 	FuQuirksLoadFlags quirks_flags = FU_QUIRKS_LOAD_FLAG_NONE;
 	g_autoptr(GPtrArray) checksums_approved = NULL;
 	g_autoptr(GPtrArray) checksums_blocked = NULL;
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	g_autoptr(GError) error_local = NULL;
 #endif
 
@@ -6475,7 +6476,8 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 		return TRUE;
 
 /* TODO: Read registry key [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography] "MachineGuid" */
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	/* cache machine ID so we can use it from a sandboxed app */
 	self->host_machine_id = fwupd_build_machine_id ("fwupd", &error_local);
 	if (self->host_machine_id == NULL)

@@ -1576,7 +1576,8 @@ gboolean
 fu_udev_device_write_sysfs (FuUdevDevice *self, const gchar *attribute,
 			    const gchar *val, GError **error)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	ssize_t n;
 	int r;
 	int fd;

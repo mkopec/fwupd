@@ -10,7 +10,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 #include <linux/fs.h>
 #include <sys/ioctl.h>
 #include <gio/gunixinputstream.h>
@@ -49,7 +50,8 @@ fu_efivar_get_filename (const gchar *guid, const gchar *name)
 gboolean
 fu_efivar_supported (GError **error)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	g_autofree gchar *efivardir = fu_efivar_get_path ();
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	if (!g_file_test (efivardir, G_FILE_TEST_IS_DIR)) {
@@ -71,7 +73,8 @@ fu_efivar_supported (GError **error)
 #endif
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 static gboolean
 fu_efivar_set_immutable_fd (int fd,
 			     gboolean value,
@@ -135,7 +138,8 @@ fu_efivar_set_immutable (const gchar *fn,
 			  gboolean *value_old,
 			  GError **error)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	gint fd;
 	g_autoptr(GInputStream) istr = NULL;
 
@@ -298,7 +302,8 @@ gboolean
 fu_efivar_get_data (const gchar *guid, const gchar *name, guint8 **data,
 		       gsize *data_sz, guint32 *attr, GError **error)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	gssize attr_sz;
 	gssize data_sz_tmp;
 	guint32 attr_tmp;
@@ -546,7 +551,8 @@ gboolean
 fu_efivar_set_data (const gchar *guid, const gchar *name, const guint8 *data,
 		     gsize sz, guint32 attr, GError **error)
 {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__FreeBSD__) && !defined(__DragonflyBSD__) \
+	&& !defined(__OpenBSD__) && !defined(__NetBSD__)
 	int fd;
 	int open_wflags;
 	gboolean was_immutable;

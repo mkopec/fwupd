@@ -168,7 +168,6 @@ fwupd_get_os_release (GError **error)
 			     g_strdup("Windows"));
 	return hash;
 #endif
-
 	/* find the correct file */
 	for (guint i = 0; paths[i] != NULL; i++) {
 		if (g_file_test (paths[i], G_FILE_TEST_EXISTS)) {

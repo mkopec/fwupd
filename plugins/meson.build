@@ -46,7 +46,6 @@ if get_option('gusb')
 subdir('ccgx')
 subdir('colorhug')
 subdir('cros-ec')
-subdir('dfu')
 subdir('ebitdo')
 subdir('fastboot')
 subdir('fresco-pd')
@@ -63,7 +62,6 @@ subdir('vli')
 subdir('wacom-usb')
 
 # depends on dfu
-subdir('csr')
 endif
 
 if get_option('tpm')
