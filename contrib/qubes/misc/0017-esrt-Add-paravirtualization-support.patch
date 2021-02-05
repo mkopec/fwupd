@@ -1,0 +1,88 @@
+From 802377eb1a2b9fd690bb8f4d00924119bedcb36a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Norbert=20Kami=C5=84ski?= <norbert.kaminski@3mdeb.com>
+Date: Wed, 20 Jan 2021 20:04:40 +0100
+Subject: [PATCH] esrt: Add paravirtualization support
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Norbert Kamiński <norbert.kaminski@3mdeb.com>
+---
+ drivers/firmware/efi/esrt.c | 46 +++++++++++++++++++------------------
+ 1 file changed, 24 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/firmware/efi/esrt.c b/drivers/firmware/efi/esrt.c
+index d59152721..1c650a0cc 100644
+--- a/drivers/firmware/efi/esrt.c
++++ b/drivers/firmware/efi/esrt.c
+@@ -245,36 +245,38 @@ void __init efi_esrt_init(void)
+ 	int rc;
+ 	phys_addr_t end;
+ 
+-	if (!efi_enabled(EFI_MEMMAP))
++	if (!efi_enabled(EFI_MEMMAP) && !efi_enabled(EFI_PARAVIRT))
+ 		return;
+ 
+ 	pr_debug("esrt-init: loading.\n");
+ 	if (!esrt_table_exists())
+ 		return;
+ 
+-	rc = efi_mem_desc_lookup(efi.esrt, &md);
+-	if (rc < 0 ||
+-	    (!(md.attribute & EFI_MEMORY_RUNTIME) &&
+-	     md.type != EFI_BOOT_SERVICES_DATA &&
+-	     md.type != EFI_RUNTIME_SERVICES_DATA)) {
+-		pr_warn("ESRT header is not in the memory map.\n");
+-		return;
+-	}
++	if (!efi_enabled(EFI_PARAVIRT)) {
++		rc = efi_mem_desc_lookup(efi.esrt, &md);
++		if (rc < 0 ||
++			(!(md.attribute & EFI_MEMORY_RUNTIME) &&
++			md.type != EFI_BOOT_SERVICES_DATA &&
++			md.type != EFI_RUNTIME_SERVICES_DATA)) {
++			pr_warn("ESRT header is not in the memory map.\n");
++			return;
++		}
+ 
+-	max = efi_mem_desc_end(&md);
+-	if (max < efi.esrt) {
+-		pr_err("EFI memory descriptor is invalid. (esrt: %p max: %p)\n",
+-		       (void *)efi.esrt, (void *)max);
+-		return;
+-	}
++		max = efi_mem_desc_end(&md);
++		if (max < efi.esrt) {
++			pr_err("EFI memory descriptor is invalid. (esrt: %p max: %p)\n",
++				(void *)efi.esrt, (void *)max);
++			return;
++		}
+ 
+-	size = sizeof(*esrt);
+-	max -= efi.esrt;
++		size = sizeof(*esrt);
++		max -= efi.esrt;
+ 
+-	if (max < size) {
+-		pr_err("ESRT header doesn't fit on single memory map entry. (size: %zu max: %zu)\n",
+-		       size, max);
+-		return;
++		if (max < size) {
++			pr_err("ESRT header doesn't fit on single memory map entry. (size: %zu max: %zu)\n",
++				size, max);
++			return;
++		}
+ 	}
+ 
+ 	va = early_memremap(efi.esrt, size);
+@@ -331,7 +333,7 @@ void __init efi_esrt_init(void)
+ 
+ 	end = esrt_data + size;
+ 	pr_info("Reserving ESRT space from %pa to %pa.\n", &esrt_data, &end);
+-	if (md.type == EFI_BOOT_SERVICES_DATA)
++	if (md.type == EFI_BOOT_SERVICES_DATA && !efi_enabled(EFI_PARAVIRT))
+ 		efi_mem_reserve(esrt_data, esrt_data_size);
+ 
+ 	pr_debug("esrt-init: loaded.\n");
+-- 
+2.25.1
