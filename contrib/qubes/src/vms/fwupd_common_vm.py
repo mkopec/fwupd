@@ -42,7 +42,7 @@ class FwupdVmCommon:
                     f"the personal data!!{WARNING_COLOR}"
                 )
 
-    def _check_shasum(self, file_path, sha):
+    def check_shasum(self, file_path, sha):
         """Compares computed SHA256 checksum with `sha` parameter.
 
         Keyword arguments:
@@ -50,15 +50,15 @@ class FwupdVmCommon:
         sha -- SHA256 checksum of the file
         """
         with open(file_path, 'rb') as f:
-            c_sha = hashlib.sha256(f.read()).hexdigest()
+            c_sha = hashlib.sha1(f.read()).hexdigest()
         if c_sha != sha:
-            self.clean()
+            self.clean_cache()
             raise ValueError(
                 "Computed checksum %s did NOT match %s. " %
                 (c_sha, sha)
             )
 
-    def validate_dirs(self):
+    def validate_vm_dirs(self):
         """Validates and creates directories"""
         print("Validating directories")
         if not os.path.exists(FWUPD_VM_DIR):
@@ -72,23 +72,24 @@ class FwupdVmCommon:
             self._create_dirs(FWUPD_VM_UPDATES_DIR)
         os.umask(self.old_umask)
 
-    def _jcat_verification(self, file_path):
+    def _jcat_verification(self, file_path, file_directory):
         """Verifies sha1 and sha256 checksum, GPG signature,
         and PKCS#7 signature.
 
         Keyword argument:
         file_path -- absolute path to jcat file
+        file_directory -- absolute path to the directory to jcat file location
         """
         cmd_jcat = [
             "jcat-tool",
             "verify",
-            f"{file_path}.jcat",
+            f"{file_path}",
             "--public-keys",
             FWUPD_PKI
         ]
         p = subprocess.Popen(
             cmd_jcat,
-            cwd=FWUPD_VM_METADATA_DIR,
+            cwd=file_directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
@@ -96,10 +97,10 @@ class FwupdVmCommon:
         verification = stdout.decode('utf-8')
         print(verification)
         if p.returncode != 0:
-            self.clean()
+            self.clean_cache()
             raise Exception('jcat-tool: Verification failed')
 
-    def clean(self):
+    def clean_cache(self):
         """Removes updates data"""
         print("Cleaning cache directories")
         if os.path.exists(FWUPD_VM_METADATA_DIR):

@@ -242,7 +242,7 @@ class TestQubesFwupdmgr(unittest.TestCase):
     def test_download_firmware_updates(self):
         self.q._download_firmware_updates(
             "https://fwupd.org/downloads/0a29848de74d26348bc5a6e24fc9f03778eddf0e-hughski-colorhug2-2.0.7.cab",
-            "491d854f1e48e8f71edb8f43afd6792729289b9e"
+            "80bddeb898cda5b87d9837e13a9ace19846053bf"
         )
         update_path = os.path.join(
             FWUPD_DOM0_UPDATES_DIR,
@@ -266,7 +266,7 @@ class TestQubesFwupdmgr(unittest.TestCase):
     def test_download_firmware_updates_whonix(self):
         self.q._download_firmware_updates(
             "https://fwupd.org/downloads/0a29848de74d26348bc5a6e24fc9f03778eddf0e-hughski-colorhug2-2.0.7.cab",
-            "491d854f1e48e8f71edb8f43afd6792729289b9e",
+            "80bddeb898cda5b87d9837e13a9ace19846053bf",
             whonix=True,
         )
         update_path = os.path.join(
@@ -948,7 +948,7 @@ class TestQubesFwupdmgr(unittest.TestCase):
     @unittest.skipUnless(check_usbvm(), REQUIRED_USBVM)
     def test_validate_usbvm_archive(self):
         url = "https://fwupd.org/downloads/0a29848de74d26348bc5a6e24fc9f03778eddf0e-hughski-colorhug2-2.0.7.cab"
-        sha = "491d854f1e48e8f71edb8f43afd6792729289b9e"
+        sha = "80bddeb898cda5b87d9837e13a9ace19846053bf"
         name = url.replace("https://fwupd.org/downloads/", "")
         self.q._clean_usbvm()
         self.q._validate_usbvm_dirs()
@@ -967,8 +967,8 @@ class TestQubesFwupdmgr(unittest.TestCase):
             "qvm-run",
             "--pass-io",
             "sys-usb",
-            "[ -d %s ]" %
-            os.path.join(FWUPD_VM_UPDATES_DIR, name.replace(".cab", ""))
+            "[ -f %s ]" %
+            os.path.join(FWUPD_VM_UPDATES_DIR, name)
         ]
         p = subprocess.Popen(cmd_validate_udpdate)
         p.wait()

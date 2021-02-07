@@ -1,0 +1,6 @@
+#!/bin/bash
+
+git reset --soft HEAD~1
+git add .
+git commit -s -m 'WIP'
+docker run --privileged -e QUBES=true -t -v `pwd`:/github/workspace fwupd-fedora

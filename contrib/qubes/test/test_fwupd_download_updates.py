@@ -43,7 +43,7 @@ class TestFwupdDownloadUpdates(unittest.TestCase):
         dn = fwupd_download_updates.DownloadData()
         dn.download_updates(
             "https://fwupd.org/downloads/0a29848de74d26348bc5a6e24fc9f03778eddf0e-hughski-colorhug2-2.0.7.cab",
-            "491d854f1e48e8f71edb8f43afd6792729289b9e"
+            "80bddeb898cda5b87d9837e13a9ace19846053bf"
         )
         update_path = os.path.join(
             FWUPD_VM_UPDATES_DIR,
@@ -56,7 +56,7 @@ class TestFwupdDownloadUpdates(unittest.TestCase):
         dn = fwupd_download_updates.DownloadData()
         dn.download_updates(
             "https://fwupd.org/downloads/0a29848de74d26348bc5a6e24fc9f03778eddf0e-hughski-colorhug2-2.0.7.cab",
-            "491d854f1e48e8f71edb8f43afd6792729289b9e"
+            "80bddeb898cda5b87d9837e13a9ace19846053bf"
         )
         update_path = os.path.join(
             FWUPD_VM_UPDATES_DIR,
@@ -65,7 +65,7 @@ class TestFwupdDownloadUpdates(unittest.TestCase):
         try:
             dn._check_shasum(
                 update_path,
-                "491d8511111118f71edb8f43afd6792729289b9e"
+                "80bddeb898cda5b87d9837e13a9ace19846053bf"
             )
         except ValueError:
             return

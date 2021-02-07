@@ -62,7 +62,7 @@ class FwupdReceiveUpdates:
         sha -- SHA256 checksum of the file
         """
         with open(file_path, 'rb') as f:
-            c_sha = hashlib.sha256(f.read()).hexdigest()
+            c_sha = hashlib.sha1(f.read()).hexdigest()
         if c_sha != sha:
             self.clean_cache()
             raise ValueError(f"Computed checksum {c_sha} did NOT match {sha}.")
@@ -131,7 +131,6 @@ class FwupdReceiveUpdates:
         archive_path -- absolute path to archive file
         output_path -- absolute path to the output directory
         """
-        shutil.copy(archive_path, output_path)
         cmd_extract = [
             "gcab",
             "-x",
@@ -175,12 +174,13 @@ class FwupdReceiveUpdates:
                 f'Domain updateVM sent not signed firmware: {file_path}'
             )
 
-    def _jcat_verification(self, file_path):
+    def _jcat_verification(self, file_path, file_directory):
         """Verifies sha1 and sha256 checksum, GPG signature,
         and PKCS#7 signature.
 
         Keyword argument:
         file_path -- absolute path to jcat file
+        file_directory -- absolute path to the directory to jcat file location
         """
         cmd_jcat = [
             "jcat-tool",
@@ -191,7 +191,7 @@ class FwupdReceiveUpdates:
         ]
         p = subprocess.Popen(
             cmd_jcat,
-            cwd=FWUPD_DOM0_METADATA_DIR,
+            cwd=file_directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
@@ -202,7 +202,7 @@ class FwupdReceiveUpdates:
             self.clean_cache()
             raise Exception('jcat-tool: Verification failed')
 
-    def _handle_fw_update(self, updatevm, sha, filename):
+    def handle_fw_update(self, updatevm, sha, filename):
         """Copies firmware update archives from the updateVM.
 
         Keyword arguments:
@@ -221,6 +221,8 @@ class FwupdReceiveUpdates:
         )
 
         self._check_domain(updatevm)
+        if os.path.exists(FWUPD_DOM0_UNTRUSTED_DIR):
+            shutil.rmtree(FWUPD_DOM0_UNTRUSTED_DIR)
         self._create_dirs(FWUPD_DOM0_UPDATES_DIR, FWUPD_DOM0_UNTRUSTED_DIR)
 
         cmd_copy = 'qvm-run --pass-io %s %s > %s' % (
@@ -240,23 +242,28 @@ class FwupdReceiveUpdates:
         )
         self._check_shasum(dom0_firmware_untrusted_path, sha)
         untrusted_dir_name = filename.replace(".cab", "")
-        output_path = os.path.join(
+        self._extract_archive(
+            dom0_firmware_untrusted_path,
+            FWUPD_DOM0_UNTRUSTED_DIR
+        )
+        signature_name = os.path.join(
             FWUPD_DOM0_UNTRUSTED_DIR,
-            untrusted_dir_name
-            )
-        self._extract_archive(dom0_firmware_untrusted_path, output_path)
-        signature_name = os.path.join(output_path, "firmware*.jcat")
+            "firmware*.jcat"
+        )
         file_path = glob.glob(signature_name)
         if not file_path:
             print(
                 f"{WARNING_COLOR}jcat signature file is not available.\n"
                 "Validating firmware with GPG signature."
             )
-            signature_name = os.path.join(output_path, "firmware*.asc")
+            signature_name = os.path.join(
+                FWUPD_DOM0_UNTRUSTED_DIR,
+                "firmware*.asc"
+            )
             file_path = glob.glob(signature_name)
             self._gpg_verification(file_path[0].replace(".asc", ""))
         else:
-            self._jcat_verification(file_path[0].replace(".jcat", "")
+            self._jcat_verification(file_path[0], FWUPD_DOM0_UPDATES_DIR)
         os.umask(self.old_umask)
         if untrusted_dir_name == "untrusted":
             untrusted_dir_name = "trusted"
@@ -270,10 +277,10 @@ class FwupdReceiveUpdates:
         else:
             self.arch_path = os.path.join(FWUPD_DOM0_UPDATES_DIR, filename)
         dir_name = os.path.join(FWUPD_DOM0_UPDATES_DIR, untrusted_dir_name)
-        shutil.move(output_path, dir_name)
-        shutil.rmtree(FWUPD_DOM0_UNTRUSTED_DIR)
+        os.remove(dom0_firmware_untrusted_path)
+        shutil.move(FWUPD_DOM0_UNTRUSTED_DIR, dir_name)
 
-    def _handle_metadata_update(self, updatevm, metadata_url=None):
+    def handle_metadata_update(self, updatevm, metadata_url=None):
         """Copies metadata files from the updateVM.
 
         Keyword argument:
@@ -329,7 +336,10 @@ class FwupdReceiveUpdates:
             FWUPD_METADATA_FILES_REGEX,
             updatevm
         )
-        self._jcat_verification(self.metadata_file_jcat)
+        self._jcat_verification(
+            self.metadata_file_jcat,
+            FWUPD_DOM0_METADATA_DIR
+        )
         os.umask(self.old_umask)
 
     def clean_cache(self, usbvm=False):

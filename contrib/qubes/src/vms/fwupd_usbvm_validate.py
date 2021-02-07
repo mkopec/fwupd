@@ -66,7 +66,6 @@ class FwupdUsbvmUpdates(FwupdVmCommon):
         archive_path -- absolute path to archive file
         output_path -- absolute path to the output directory
         """
-        shutil.copy(archive_path, output_path)
         cmd_extract = [
             "gcab",
             "-x",
@@ -79,33 +78,6 @@ class FwupdUsbvmUpdates(FwupdVmCommon):
             raise Exception(
                 'gcab: Error while extracting %s.' %
                 archive_path
-            )
-
-    def _gpg_verification(self, file_path):
-        """Verifies GPG signature.
-
-        Keyword argument:
-        file_path -- absolute path to inspected file
-        """
-        cmd_gpg = [
-            "gpg",
-            "--verify",
-            "%s.asc" % file_path,
-            "%s" % file_path,
-        ]
-        p = subprocess.Popen(
-            cmd_gpg,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        __, stderr = p.communicate()
-        verification = stderr.decode('ascii')
-        print(verification)
-        if p.returncode != 0:
-            raise Exception('gpg: Verification failed')
-        if not GPG_LVFS_REGEX.search(verification.strip()):
-            raise Exception(
-                'Domain updateVM sent not signed firmware: ' + file_path
             )
 
     def validate_metadata(self, metadata_url=None):
@@ -123,7 +95,10 @@ class FwupdUsbvmUpdates(FwupdVmCommon):
         else:
             metadata_file = FWUPD_VM_METADATA_FILE
         try:
-            self._jcat_verification(metadata_file)
+            self._jcat_verification(
+                f"{metadata_file}.jcat",
+                FWUPD_VM_METADATA_DIR
+            )
         except Exception as e:
             print(str(e), file=sys.stderr)
             self.clean()
@@ -138,12 +113,20 @@ class FwupdUsbvmUpdates(FwupdVmCommon):
         """
         print("Running validation of the update archive")
         self.check_shasum(archive_path, sha)
+        archive_name = archive_path.replace(f"{FWUPD_VM_UPDATES_DIR}/", "")
         output_path = archive_path.replace(".cab", "")
-        self._extract_archive(archive_path, output_path)
-        signature_name = os.path.join(output_path, "firmware*.asc")
+        arch_temp = os.path.join(output_path, archive_name)
+        os.mkdir(output_path)
+        shutil.copyfile(archive_path, arch_temp)
+        self._extract_archive(
+            arch_temp,
+            output_path
+        )
+        signature_name = os.path.join(output_path, "firmware*.jcat")
         file_path = glob.glob(signature_name)
         try:
-            self._gpg_verification(file_path[0].replace(".asc", ""))
+            self._jcat_verification(file_path[0], output_path)
+            shutil.rmtree(output_path)
         except Exception as e:
             print(str(e), file=sys.stderr)
             self.clean()
@@ -162,7 +145,7 @@ def main():
     if sys.argv[1] == "metadata":
         f.validate_metadata(metadata_url=metadata_url)
     elif sys.argv[1] == "dirs":
-        f_val.validate_dirs()
+        f_val.validate_vm_dirs()
     elif sys.argv[1] == "clean":
         f.clean()
     elif sys.argv[1] == "updates" and len(sys.argv) < 4:

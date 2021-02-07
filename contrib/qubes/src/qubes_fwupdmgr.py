@@ -684,11 +684,11 @@ class QubesFwupdmgr(FwupdHeads, FwupdUpdate, FwupdReceiveUpdates):
         """
         self._get_dom0_updates()
         self._parse_dom0_updates_info(self.dom0_updates_info)
-        self._get_usbvm_devices()
-        with open(FWUPD_VM_LOG) as usbvm_device_info:
-            raw = usbvm_device_info.read()
-            self._parse_usbvm_updates(raw)
         if usbvm:
+            self._get_usbvm_devices()
+            with open(FWUPD_VM_LOG) as usbvm_device_info:
+                raw = usbvm_device_info.read()
+                self._parse_usbvm_updates(raw)
             update_dict = {
                 "usbvm": self.usbvm_updates_list,
                 "dom0": self.dom0_updates_list
@@ -713,6 +713,7 @@ class QubesFwupdmgr(FwupdHeads, FwupdUpdate, FwupdReceiveUpdates):
         if vm_name == "usbvm":
             self._validate_usbvm_dirs()
             self._copy_firmware_updates(self.arch_name)
+            self._validate_usbvm_archive(self.arch_name, self.sha)
             self._install_usbvm_firmware_update(self.arch_name)
 
     def _parse_downgrades(self, device_list):
@@ -1052,6 +1053,19 @@ class QubesFwupdmgr(FwupdHeads, FwupdUpdate, FwupdReceiveUpdates):
         else:
             raise Exception("Copying heads update failed!!")
 
+    def validate_dom0_dirs(self):
+        """Validates and creates directories"""
+        if not os.path.exists(FWUPD_DOM0_DIR):
+            self._create_dirs(FWUPD_DOM0_DIR)
+        if os.path.exists(FWUPD_DOM0_METADATA_DIR):
+            shutil.rmtree(FWUPD_DOM0_METADATA_DIR)
+            self._create_dirs(FWUPD_DOM0_METADATA_DIR)
+        else:
+            self._create_dirs(FWUPD_DOM0_METADATA_DIR)
+        if not os.path.exists(FWUPD_DOM0_UPDATES_DIR):
+            self._create_dirs(FWUPD_DOM0_UPDATES_DIR)
+        os.umask(self.old_umask)
+
 
 def main():
     if os.geteuid() != 0:
@@ -1060,6 +1074,7 @@ def main():
 
     q = QubesFwupdmgr()
     sys_usb = q.check_usbvm()
+    q.validate_dom0_dirs()
     q.trusted_cleanup(usbvm=sys_usb)
     q.refresh_metadata_after_bios_update(usbvm=sys_usb)
 

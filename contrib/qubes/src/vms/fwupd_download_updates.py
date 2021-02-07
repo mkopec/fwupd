@@ -6,8 +6,6 @@
 #
 # SPDX-License-Identifier: LGPL-2.1+
 #
-
-import hashlib
 import sys
 import subprocess
 import os
@@ -97,27 +95,9 @@ class DownloadData(FwupdVmCommon):
                 FWUPD_VM_METADATA_DIR,
                 "firmware.xml.gz"
             )
-        self.validate_dirs()
+        self.validate_vm_dirs()
         self._download_metadata_file()
         self._download_metadata_jcat()
-        self._jcat_verification(
-            os.path.join(FWUPD_VM_METADATA_DIR, self.metadata_file)
-        )
-
-    def _check_shasum(self, file_path, sha):
-        """Compares computed SHA256 checksum with `sha` parameter.
-
-        Keyword arguments:
-        file_path -- absolute path to the file
-        sha -- SHA256 checksum of the file
-        """
-        with open(file_path, 'rb') as f:
-            c_sha = hashlib.sha256(f.read()).hexdigest()
-        if c_sha != sha:
-            raise ValueError(
-                "Computed checksum %s did NOT match %s. " %
-                (c_sha, sha)
-            )
 
     def download_updates(self, url, sha):
         """
@@ -126,7 +106,7 @@ class DownloadData(FwupdVmCommon):
         Keyword argument:
         url - url address of the update
         """
-        self.validate_dirs()
+        self.validate_vm_dirs()
         self.arch_name = url.replace("https://fwupd.org/downloads/", "")
         self._decrypt_update_url(url)
         update_path = os.path.join(FWUPD_VM_UPDATES_DIR, self.arch_name)
