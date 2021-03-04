@@ -6342,7 +6342,7 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 	guint backend_cnt = 0;
 	g_autoptr(GPtrArray) checksums_approved = NULL;
 	g_autoptr(GPtrArray) checksums_blocked = NULL;
-#ifndef _WIN32
+#ifdef __linux__
 	g_autoptr(GError) error_local = NULL;
 #endif
 
@@ -6354,7 +6354,7 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 		return TRUE;
 
 /* TODO: Read registry key [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography] "MachineGuid" */
-#ifndef _WIN32
+#ifdef __linux__
 	/* cache machine ID so we can use it from a sandboxed app */
 	self->host_machine_id = fwupd_build_machine_id ("fwupd", &error_local);
 	if (self->host_machine_id == NULL)

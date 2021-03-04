@@ -169,6 +169,22 @@ fwupd_get_os_release (GError **error)
 	return hash;
 #endif
 
+#ifdef __NetBSD__
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	g_hash_table_insert (hash,
+			     g_strdup("OS"),
+			     g_strdup("NetBSD"));
+	return hash;
+#endif
+
+#ifdef __OpenBSD__
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	g_hash_table_insert (hash,
+			     g_strdup("OS"),
+			     g_strdup("OpenBSD"));
+	return hash;
+#endif
+
 	/* find the correct file */
 	for (guint i = 0; paths[i] != NULL; i++) {
 		if (g_file_test (paths[i], G_FILE_TEST_EXISTS)) {

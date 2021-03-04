@@ -1,4 +1,4 @@
-if get_option('gusb')
+if get_option('gusb') and host_machine.system() == 'linux'
 cargs = ['-DG_LOG_DOMAIN="FuPluginDfu"']
 
 install_data(['dfu.quirk'],
