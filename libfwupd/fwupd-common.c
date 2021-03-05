@@ -164,8 +164,24 @@ fwupd_get_os_release (GError **error)
 #ifdef _WIN32
 	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	g_hash_table_insert (hash,
-			     g_strdup("OS"),
-			     g_strdup("Windows"));
+			     g_strdup ("OS"),
+			     g_strdup ("Windows"));
+	return hash;
+#endif
+
+#ifdef __NetBSD__
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	g_hash_table_insert (hash,
+			     g_strdup ("OS"),
+			     g_strdup ("NetBSD"));
+	return hash;
+#endif
+
+#ifdef __OpenBSD__
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	g_hash_table_insert (hash,
+			     g_strdup ("OS"),
+			     g_strdup ("OpenBSD"));
 	return hash;
 #endif
 
@@ -346,7 +362,7 @@ fwupd_build_machine_id (const gchar *salt, GError **error)
 {
 	const gchar *fn = NULL;
 	g_autofree gchar *buf = NULL;
-	g_auto(GStrv) fns = g_new0 (gchar *, 5);
+	g_auto(GStrv) fns = g_new0 (gchar *, 6);
 	g_autoptr(GChecksum) csum = NULL;
 	gsize sz = 0;
 
@@ -358,6 +374,7 @@ fwupd_build_machine_id (const gchar *salt, GError **error)
 	fns[1] = g_build_filename (FWUPD_LOCALSTATEDIR, "lib", "dbus", "machine-id", NULL);
 	fns[2] = g_strdup ("/etc/machine-id");
 	fns[3] = g_strdup ("/var/lib/dbus/machine-id");
+	fns[4] = g_strdup ("/var/db/dbus/machine-id");
 	for (guint i = 0; fns[i] != NULL; i++) {
 		if (g_file_test (fns[i], G_FILE_TEST_EXISTS)) {
 			fn = fns[i];

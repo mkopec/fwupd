@@ -242,9 +242,27 @@ if build_daemon
     warning('Polkit is disabled, the daemon will allow ALL client actions')
   endif
   udevdir = get_option('udevdir')
-  if udevdir == ''
+  if udevdir == '' and host_machine.system() == 'linux'
     udev = dependency('udev')
     udevdir = udev.get_pkgconfig_variable('udevdir')
+  endif
+  # Check if machine-id exists
+  fs = import('fs')
+  machine_id_paths = [
+    '/var/local/lib/dbus/machine-id',
+    '/var/local/etc/machine-id"',
+    '/etc/machine-id',
+    '/var/lib/dbus/machine-id',
+    '/var/db/dbus/machine-id',
+  ]
+  foreach arg: machine_id_paths
+    if fs.is_file(arg)
+      conf.set('MACHINE_ID', arg)
+      break
+    endif
+  endforeach
+  if not conf.has('MACHINE_ID') and not host_machine.system() == 'windows'
+    error('The machine-id is not present')
   endif
 endif
 libm = cc.find_library('m', required: false)
