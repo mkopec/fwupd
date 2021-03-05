@@ -6354,9 +6354,9 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 		return TRUE;
 
 /* TODO: Read registry key [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography] "MachineGuid" */
-#ifndef _WIN32
+#ifdef MACHINE_ID
 	/* cache machine ID so we can use it from a sandboxed app */
-	self->host_machine_id = fwupd_build_machine_id ("fwupd", &error_local);
+	self->host_machine_id = fwupd_build_machine_id (MACHINE_ID, &error_local);
 	if (self->host_machine_id == NULL)
 		g_debug ("failed to build machine-id: %s", error_local->message);
 #endif

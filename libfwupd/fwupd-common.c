@@ -346,7 +346,7 @@ fwupd_build_user_agent (const gchar *package_name, const gchar *package_version)
 
 /**
  * fwupd_build_machine_id:
- * @salt: The salt, or %NULL for none
+ * @fn: The path of machine-id
  * @error: A #GError or %NULL
  *
  * Gets a salted hash of the /etc/machine-id contents. This can be used to
@@ -358,36 +358,15 @@ fwupd_build_user_agent (const gchar *package_name, const gchar *package_version)
  * Since: 1.0.4
  **/
 gchar *
-fwupd_build_machine_id (const gchar *salt, GError **error)
+fwupd_build_machine_id (const gchar *fn, GError **error)
 {
-	const gchar *fn = NULL;
 	g_autofree gchar *buf = NULL;
-	g_auto(GStrv) fns = g_new0 (gchar *, 6);
 	g_autoptr(GChecksum) csum = NULL;
 	gsize sz = 0;
 
-	g_return_val_if_fail (salt != NULL, NULL);
+	g_return_val_if_fail (fn != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-	/* one of these has to exist */
-	fns[0] = g_build_filename (FWUPD_SYSCONFDIR, "machine-id", NULL);
-	fns[1] = g_build_filename (FWUPD_LOCALSTATEDIR, "lib", "dbus", "machine-id", NULL);
-	fns[2] = g_strdup ("/etc/machine-id");
-	fns[3] = g_strdup ("/var/lib/dbus/machine-id");
-	fns[4] = g_strdup ("/var/db/dbus/machine-id");
-	for (guint i = 0; fns[i] != NULL; i++) {
-		if (g_file_test (fns[i], G_FILE_TEST_EXISTS)) {
-			fn = fns[i];
-			break;
-		}
-	}
-	if (fn == NULL) {
-		g_set_error_literal (error,
-				     FWUPD_ERROR,
-				     FWUPD_ERROR_READ,
-				     "The machine-id is not present");
-		return NULL;
-	}
 	if (!g_file_get_contents (fn, &buf, &sz, error))
 		return NULL;
 	if (sz == 0) {
@@ -555,7 +534,7 @@ fwupd_build_history_report_json (GPtrArray *devices, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* get a hash that represents the machine */
-	machine_id = fwupd_build_machine_id ("fwupd", error);
+	machine_id = fwupd_build_machine_id (MACHINE_ID, error);
 	if (machine_id == NULL)
 		return NULL;
 
