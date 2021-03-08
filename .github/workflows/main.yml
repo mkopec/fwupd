@@ -61,6 +61,7 @@ jobs:
           echo "MODIFYING MK.CONF WITH AGPL LICENSE"
           awk '/\.endif/{print "ACCEPTABLE_LICENSES+= gnu-agpl-v3\n"; print $0; next}{print $0}' /usr/pkg/etc/mk.conf > tmp.conf
           mv tmp.conf /usr/pkg/etc/mk.conf
+          cat /usr/pkg/etc/mk.conf
 
           echo "STARTING BMAKE INSTALL BUILD OF FWUPD"
           date > "~/fwupd_build_start"
