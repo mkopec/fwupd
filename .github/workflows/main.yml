@@ -49,17 +49,20 @@ jobs:
         usesh: true
         prepare: pkg install -y git
         run: |
-          pwd
-          ls -lah
-          whoami
-          env
-          freebsd-version
           git clone https://github.com/NetBSD/pkgsrc.git --depth 1
           cd pkgsrc/bootstrap
+
+          echo "STARTING BOOTSRAP OF PKGSRC"
           ./bootstrap
           cd ../
           git clone https://github.com/3mdeb/pkgsrc-wip.git --branch fwupd-bsd --depth 1 wip
           cd wip/fwupd/
+
+          echo "MODIFYING MK.CONF WITH AGPL LICENSE"
+          awk '/\.endif/{print "ACCEPTABLE_LICENSES+= gnu-agpl-v3\n"; print $0; next}{print $0}' /usr/pkg/etc/mk.conf > tmp.conf
+          mv tmp.conf /usr/pkg/etc/mk.conf
+
+          echo "STARTING BMAKE INSTALL BUILD OF FWUPD"
           date > "~/fwupd_build_start"
           /usr/pkg/bin/bmake install
           date > "~/fwupd_build_end"
