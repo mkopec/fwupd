@@ -41,33 +41,47 @@ jobs:
   build-freebsd:
     runs-on: macos-latest
     name: A job to run test FreeBSD
+    env:
+      BUILD_DEPS_BIN_URL: "https://cloud.3mdeb.com/index.php/s/LHp8zgjMbjHKdSw/download"
     steps:
     - name: Test in FreeBSD
       id: test
       uses: vmactions/freebsd-vm@v0.1.2
       with:
         usesh: true
-        prepare: pkg install -y git
+        prepare: pkg install -y git unzip wget
+        envs: 'BUILD_DEPS_BIN_URL'
+        sync: rsync
         run: |
+          id -a
+          env
           git clone https://github.com/NetBSD/pkgsrc.git --depth 1
-          cd pkgsrc/bootstrap
-
           echo "STARTING BOOTSRAP OF PKGSRC"
-          ./bootstrap
-          cd ../
+          ./pkgsrc/bootstrap/bootstrap
+          echo "UNPACK AND INSTALL BINARY DEPENDENCIES"
+          wget -O build_deps.zip ${BUILD_DEPS_BIN_URL}
+          unzip build_deps.zip -d build_deps
+          /usr/pkg/sbin/pkg_add build_deps/*
+          cd pkgsrc
           git clone https://github.com/3mdeb/pkgsrc-wip.git --branch fwupd-bsd --depth 1 wip
           cd wip/fwupd/
-
-          echo "MODIFYING MK.CONF WITH AGPL LICENSE"
-          awk '/\.endif/{print "ACCEPTABLE_LICENSES+= gnu-agpl-v3\n"; print $0; next}{print $0}' /usr/pkg/etc/mk.conf > tmp.conf
-          mv tmp.conf /usr/pkg/etc/mk.conf
-          cat /usr/pkg/etc/mk.conf
-
           echo "STARTING BMAKE INSTALL BUILD OF FWUPD"
-          date > "~/fwupd_build_start"
+          date > ../../../fwupd_build_start
           /usr/pkg/bin/bmake install
-          date > "~/fwupd_build_end"
+          date > ../../../fwupd_build_end
 
+    - name: Upload fwupd binary as an artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: fwupd
+        path: |
+          fwupd_build_end
+          ../fwupd_build_end
+          ../../fwupd_build_end
+          ../../../fwupd_build_end
+          ../../packages/fwupd*
+
+ 
  #  fuzzing:
  #    runs-on: ubuntu-latest
  #    steps:
