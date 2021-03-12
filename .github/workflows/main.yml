@@ -49,11 +49,11 @@ jobs:
       uses: vmactions/freebsd-vm@v0.1.2
       with:
         usesh: true
+        mem: 8192
         prepare: pkg install -y git unzip wget
         envs: 'BUILD_DEPS_BIN_URL'
         sync: rsync
         run: |
-          id -a
           env
           git clone https://github.com/NetBSD/pkgsrc.git --depth 1
           echo "STARTING BOOTSRAP OF PKGSRC"
@@ -65,21 +65,35 @@ jobs:
           cd pkgsrc
           git clone https://github.com/3mdeb/pkgsrc-wip.git --branch fwupd-bsd --depth 1 wip
           cd wip/fwupd/
+          echo "EDITING MAKEFILE"
+          REPOSITORY_NAME=$(echo "${GITHUB_REPOSITORY}" | awk -F / '{print $2}')
+          OWNER_NAME=$(echo "${GITHUB_REPOSITORY}" | awk -F / '{print $1}')
+          sed -i .old "s/GITHUB_TAG=.*$/GITHUB_TAG=\t${GITHUB_SHA}/" Makefile
+          sed -i .old "s/DISTNAME=.*$/DISTNAME=\t${GITHUB_SHA}/" Makefile
+          sed -i .old "s|MASTER_SITES=.*$|MASTER_SITES=\thttps://github.com/${OWNER_NAME}/|" Makefile
+          sed -i .old "s|GITHUB_PROJECT=.*$|GITHUB_PROJECT=\t${REPOSITORY_NAME}|" Makefile
+          sed -i .old "s|HOMEPAGE=.*$|HOMEPAGE=\t${GITHUB_SERVER_URL}/${REPOSITORY_NAME}|" Makefile
+          sed -i .old 's|WRKSRC=.*$|WRKSRC=\t\t${WRKDIR}/${GITHUB_PROJECT}-${GITHUB_TAG}|' Makefile
+          echo Makefile
+          cat Makefile
+          echo "TMP FIX - patches removal"
+          mv patches _patches
           echo "STARTING BMAKE INSTALL BUILD OF FWUPD"
-          date > ../../../fwupd_build_start
-          /usr/pkg/bin/bmake install
-          date > ../../../fwupd_build_end
+          /usr/pkg/bin/bmake NO_CHECKSUM=yes install
+          echo "FINISHED BMAKE INSTALL BUILD OF FWUPD"
+
+    - name: Test dirs
+      run: |
+        ls -l
+        pwd
+
 
     - name: Upload fwupd binary as an artifact
       uses: actions/upload-artifact@v2
       with:
         name: fwupd
         path: |
-          fwupd_build_end
-          ../fwupd_build_end
-          ../../fwupd_build_end
-          ../../../fwupd_build_end
-          ../../packages/fwupd*
+          pkgsrc/packages/All/fwupd-*
 
  
  #  fuzzing:
