@@ -14,7 +14,9 @@
 #include <glib/gi18n.h>
 #include <glib-unix.h>
 #include <locale.h>
+#ifndef __Linux__
 #include <malloc.h>
+#endif
 #ifdef HAVE_POLKIT
 #include <polkit/polkit.h>
 #endif
