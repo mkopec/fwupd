@@ -21,7 +21,15 @@ dependencies and installs package files.
 # cd /usr/ports/sysutils/fwupd
 ```
 
-4. Install package (it will take some time)
+4.1 Update `pkg-plist` (it will take some time)
+
+```
+# make makeplist > pkg-plist
+```
+
+4.2 Delete first line of the `pkg-plist` file
+
+4.3 Install package (it will take some time)
 
 ```
 # make install
