@@ -15,6 +15,10 @@
 #include "fu-smbios-private.h"
 #include "fwupd-error.h"
 
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+#include <kenv.h>
+#endif
+
 struct _FuSmbios {
 	FuFirmware		 parent_instance;
 	guint32			 structure_table_len;
@@ -87,6 +91,74 @@ fu_smbios_convert_dt_string (FuSmbios *self, guint8 type, guint8 offset,
 	/* add to strtab */
 	g_ptr_array_add (item->strings, g_strndup (buf, bufsz));
 	fu_smbios_convert_dt_value (self, type, offset, item->strings->len);
+}
+
+static void
+fu_smbios_kenv_sysctl_string (FuSmbios *self, guint8 type, guint8 offset,
+				const gchar *buf, gsize bufsz)
+{
+	FuSmbiosItem *item = g_ptr_array_index (self->items, type);
+
+	/* add to strtab */
+	g_ptr_array_add (item->strings, g_strndup (buf, bufsz));
+	fu_smbios_convert_dt_value (self, type, offset, item->strings->len);
+}
+
+static void
+fu_smbios_kenv_lookup (const char* sminfo, gchar* buf)
+{
+	g_debug ("DMI request for %s", sminfo);
+	if (kenv (KENV_GET, sminfo, buf, sizeof(buf)-1) == -1)
+		g_debug ("Cannot get %s", sminfo);
+	else
+		g_debug ("%s: %s", sminfo, buf);
+}
+
+static void
+fu_smbios_convert_kenv_string (FuSmbios *self, guint8 type, guint8 offset,
+				const char* sminfo)
+{
+	/* Maximum value length - 128 */
+	gchar buf[128] = {};
+	gsize bufsz = sizeof(buf);
+
+	fu_smbios_kenv_lookup (sminfo, buf);
+	fu_smbios_kenv_sysctl_string (self, type, offset, buf, bufsz);
+}
+
+static gboolean
+fu_smbios_setup_from_kenv (FuSmbios *self, GError **error)
+{
+	/* add all four faked structures */
+	for (guint i = 0; i < FU_SMBIOS_STRUCTURE_TYPE_LAST; i++) {
+		FuSmbiosItem *item = g_new0 (FuSmbiosItem, 1);
+		item->type = i;
+		item->buf = g_byte_array_new ();
+		item->strings = g_ptr_array_new_with_free_func (g_free);
+		g_ptr_array_add (self->items, item);
+	}
+
+	/* DMI:Manufacturer */
+	fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_SYSTEM, 0x04,
+					"smbios.bios.vendor");
+
+	/* DMI:BiosVersion */
+	fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_BIOS, 0x05,
+					"smbios.bios.version");
+
+	/* DMI:Family */
+	fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_SYSTEM, 0x1a,
+					"smbios.system.family");
+
+	/* DMI:ProductName */
+	fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_SYSTEM, 0x05,
+					"smbios.planar.product");
+
+	/* DMI:BaseboardManufacturer */
+	fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_BASEBOARD,
+					0x04, "smbios.planar.maker");
+
+	return TRUE;
 }
 
 static gboolean
@@ -468,6 +540,11 @@ fu_smbios_setup (FuSmbios *self, GError **error)
 	path_dt = g_build_filename (sysfsfwdir, "devicetree", "base", NULL);
 	if (g_file_test (path_dt, G_FILE_TEST_EXISTS))
 		return fu_smbios_setup_from_path (self, path_dt, error);
+
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+	/* kenv */
+	return fu_smbios_setup_from_kenv (self, error);
+#endif
 
 	/* neither found */
 	g_set_error_literal (error,
