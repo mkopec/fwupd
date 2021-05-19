@@ -1586,6 +1586,7 @@ fu_engine_check_requirement (FuEngine *self,
 gboolean
 fu_engine_check_trust (FuInstallTask *task, GError **error)
 {
+#ifdef __linux__
 #ifndef HAVE_POLKIT
 	if ((fu_install_task_get_trust_flags (task) & FWUPD_TRUST_FLAG_PAYLOAD) == 0) {
 		g_set_error_literal (error,
@@ -1594,6 +1595,7 @@ fu_engine_check_trust (FuInstallTask *task, GError **error)
 				     "archive signature missing or not trusted");
 		return FALSE;
 	}
+#endif
 #endif
 	return TRUE;
 }
@@ -1752,7 +1754,7 @@ fu_engine_get_report_metadata_kernel_cmdline (GHashTable *hash, GError **error)
 		"zfs",
 		NULL, /* last entry */
 	};
-
+#ifdef __linux__
 	/* get a PII-safe kernel command line */
 	if (!g_file_get_contents ("/proc/cmdline", &buf, &bufsz, error))
 		return FALSE;
@@ -1776,6 +1778,7 @@ fu_engine_get_report_metadata_kernel_cmdline (GHashTable *hash, GError **error)
 					     g_strdup (cmdline_safe->str));
 		}
 	}
+#endif
 	return TRUE;
 }
 
