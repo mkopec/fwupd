@@ -53,6 +53,47 @@ jobs:
           echo $GITHUB_WORKSPACE
           docker run --privileged -e CI=true -t -v $GITHUB_WORKSPACE:/github/workspace docker.pkg.github.com/fwupd/fwupd/fwupd-${{matrix.os}}:latest
 
+  build-freebsd:
+    runs-on: macos-latest
+    name: build (FreeBSD-12.2)
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Find tag
+      id: tagger
+      uses: jimschubert/query-tag-action@v1
+    - name: Build
+      id: test
+      uses: vmactions/freebsd-vm@v0.1.3
+      with:
+        usesh: true
+        mem: 8192
+        prepare: |
+          pkg install -y git python3 glib meson pkgconf gobject-introspection \
+            vala gtk-doc json-glib gpgme gnutls sqlite3 curl gcab libarchive \
+            help2man libelf libgpg-error gettext-tools gtk-update-icon-cache \
+            atk pango
+        sync: rsync
+        run: |
+          cd /usr
+          git clone https://github.com/3mdeb/freebsd-ports.git --depth 1 -b fwupd ports
+          cd /usr/ports/sysutils/fwupd
+          REPOSITORY_NAME=$(echo "${GITHUB_REPOSITORY}" | awk -F / '{print $2}')
+          sed -i .old "s/#GH_TAGNAME=.*$/GH_TAGNAME=\t${GITHUB_SHA}/" Makefile
+          sed -i .old "s/GH_ACCOUNT=.*$/GH_ACCOUNT=\t${GITHUB_REPOSITORY_OWNER}/" Makefile
+          sed -i .old "s/DISTVERSION=.*$/DISTVERSION=${{steps.tagger.outputs.tag}}/" Makefile
+          make makesum
+          make package
+          make install
+          cp /usr/ports/sysutils/fwupd/work/pkg/fwupd*.txz ~/work/fwupd/fwupd/ || exit 1
+
+    - name: Upload fwupd binary artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Binary package
+        path: |
+          fwupd*.txz
+
   fuzzing:
     runs-on: ubuntu-latest
     timeout-minutes: 20
