@@ -85,7 +85,8 @@ jobs:
           make makesum
           make package
           make install
-          cp /usr/ports/sysutils/fwupd/work/pkg/fwupd*.txz ~/work/fwupd/fwupd/ || exit 1
+          cp /usr/ports/sysutils/fwupd/work/pkg/fwupd*.txz \
+          ~/work/fwupd/fwupd/fwupd-freebsd-${GITHUB_SHA}-${{steps.tagger.outputs.tag}}.txz || exit 1
 
     - name: Upload fwupd binary artifact
       uses: actions/upload-artifact@v2
