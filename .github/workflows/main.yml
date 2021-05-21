@@ -1,9 +1,9 @@
 name: Continuous Integration
 on:
   push:
-    branches: [ master ]
+    branches: [ master, wip/3mdeb/freebsd-ci]
   pull_request:
-    branches: [ master ]
+    branches: [ master, wip/3mdeb/freebsd-ci]
 
 jobs:
   pre-commit:
@@ -21,18 +21,18 @@ jobs:
           sed -i "/no-commit-to-branch/d; /args: [--branch, master, --pattern, 1_.*_X]/d" .pre-commit-config.yaml
           pre-commit run --all-files
 
-  abi:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Refresh dependencies
-        run: sudo apt update
-      - name: Install dependencies
-        run: ./contrib/ci/generate_dependencies.py | sudo xargs apt install -y
-      - name: Check ABI
-        run: ./contrib/ci/check-abi $(git describe --abbrev=0 --tags) $(git rev-parse HEAD)
+#  abi:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Refresh dependencies
+#        run: sudo apt update
+#      - name: Install dependencies
+#        run: ./contrib/ci/generate_dependencies.py | sudo xargs apt install -y
+#      - name: Check ABI
+#        run: ./contrib/ci/check-abi $(git describe --abbrev=0 --tags) $(git rev-parse HEAD)
 
   build:
     runs-on: ubuntu-latest
