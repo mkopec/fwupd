@@ -1,9 +1,9 @@
 name: Continuous Integration
 on:
   push:
-    branches: [ master, wip/3mdeb/freebsd-ci]
+    branches: [ master, WIP-firmware-update]
   pull_request:
-    branches: [ master, wip/3mdeb/freebsd-ci]
+    branches: [ master, WIP-firmware-update]
 
 jobs:
   pre-commit:
