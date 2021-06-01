@@ -146,6 +146,24 @@ fu_smbios_setup_from_kenv (FuSmbios *self, GError **error)
 		is_valid = TRUE;
 	}
 
+	/* DMI:MajorVersion */
+	if (!fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_BIOS,
+					    0x14, "smbios.version", &error_local)) {
+		g_debug ("ignoring: %s", error_local->message);
+		g_clear_error (&error_local);
+	} else {
+		is_valid = TRUE;
+	}
+
+	/* DMI:MinorVersion */
+	if (!fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_BIOS,
+					    0x15, "smbios.version", &error_local)) {
+		g_debug ("ignoring: %s", error_local->message);
+		g_clear_error (&error_local);
+	} else {
+		is_valid = TRUE;
+	}
+
 	/* DMI:Family */
 	if (!fu_smbios_convert_kenv_string (self, FU_SMBIOS_STRUCTURE_TYPE_SYSTEM,
 					    0x1a, "smbios.system.family", &error_local)) {

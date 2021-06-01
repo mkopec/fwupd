@@ -590,6 +590,7 @@ fu_plugin_uefi_capsule_smbios_enabled (FuPlugin *plugin, GError **error)
 			     "offset bigger than size %" G_GSIZE_FORMAT, sz);
 		return FALSE;
 	}
+#ifdef __linux__
 	if (data[1] < 0x13) {
 		g_set_error_literal (error,
 				     FWUPD_ERROR,
@@ -604,6 +605,7 @@ fu_plugin_uefi_capsule_smbios_enabled (FuPlugin *plugin, GError **error)
 				     "System does not support UEFI mode");
 		return FALSE;
 	}
+#endif
 	return TRUE;
 }
 
