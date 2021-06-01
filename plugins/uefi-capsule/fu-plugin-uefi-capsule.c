@@ -803,6 +803,41 @@ fu_plugin_coldplug (FuPlugin *plugin, GError **error)
 	g_autoptr(GPtrArray) devices = NULL;
 	g_autoptr(FuBackend) backend = fu_uefi_backend_new ();
 
+	/* tests */
+	g_autoptr(GError) error_tests = NULL;
+	if (fu_efivar_supported(NULL))
+		g_debug ("EFI variables supported");
+	else
+		g_debug ("EFI variables not supported");
+	if (fu_efivar_exists(FU_EFIVAR_GUID_EFI_GLOBAL, "SecureBoot"))
+		g_debug ("SecureBoot variable exists");
+	else
+		g_debug ("SecureBoot variable does not exist");
+	if (fu_efivar_exists(FU_EFIVAR_GUID_EFI_GLOBAL, "ThisShouldntExist"))
+		g_debug ("Fake variable exists");
+	else
+		g_debug ("Fake variable does not exist");
+	if (fu_efivar_secure_boot_enabled ())
+		g_debug ("Secure boot enabled");
+	else
+		g_debug ("Secure boot disabled");
+	if (fu_efivar_exists(FU_EFIVAR_GUID_EFI_GLOBAL, NULL))
+		g_debug ("Any variable with global UUID exists");
+	else
+		g_debug ("No variable with global UUID exists");
+	if (fu_efivar_exists("0abba7dc-e516-4167-bbf5-4d9d1c739417", NULL))
+		g_debug ("Any variable with fake UUID exists");
+	else
+		g_debug ("No variable with fake UUID exists");
+	if (fu_efivar_get_names(FU_EFIVAR_GUID_EFI_GLOBAL, NULL) != NULL)
+		g_debug ("Variables with global UUID exist");
+	else
+		g_debug ("No variables with global UUID found");
+	if (fu_efivar_get_names("0abba7dc-e516-4167-bbf5-4d9d1c739417", NULL) != NULL)
+		g_debug ("Variables with fake UUID exist");
+	else
+		g_debug ("No variables with fake UUID found");
+
 	/* make sure that efivarfs is rw */
 	if (!fu_plugin_uefi_capsule_ensure_efivarfs_rw (&error_efivarfs)) {
 		fu_plugin_add_flag (plugin, FWUPD_PLUGIN_FLAG_EFIVAR_NOT_MOUNTED);

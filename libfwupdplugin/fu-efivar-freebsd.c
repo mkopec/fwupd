@@ -17,6 +17,19 @@
 
 #include "fwupd-error.h"
 
+static gchar *
+fu_efivar_get_path (void)
+{
+	g_autofree gchar *sysfsfwdir = fu_common_get_path (FU_PATH_KIND_SYSFSDIR_FW);
+	return g_build_filename (sysfsfwdir, "efi", "efivars", NULL);
+}
+
+static gchar *
+fu_efivar_get_filename (const gchar *guid, const gchar *name)
+{
+	g_autofree gchar *efivardir = fu_efivar_get_path ();
+	return g_strdup_printf ("%s/%s-%s", efivardir, name, guid);
+}
 
 /**
  * fu_efivar_supported:
@@ -51,16 +64,53 @@ guint64
 fu_efivar_space_used (GError **error)
 {
 	guint64 total = 0;
+	efi_guid_t *guid = NULL;
+	char *name = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, G_MAXUINT64);
 
-	/* stat each variable */
-
+	while (efi_get_next_variable_name(&guid, &name)) {
+		size_t size = 0;
+		if (efi_get_variable_size (*guid, name, &size) < 0) {
+			return G_MAXUINT64;
+		}
+		total += size;
+	}
 
 	/* success */
 	return total;
 }
 
+/**
+ * fu_efivar_set_data:
+ * @guid: Globally unique identifier
+ * @name: Variable name
+ * @data: Data to set
+ * @sz: size of @data
+ * @attr: Attributes
+ * @error: (nullable): optional return location for an error
+ *
+ * Sets the data to a UEFI variable in NVRAM
+ *
+ * Returns: %TRUE on success
+ *
+ * Since: 1.4.0
+ **/
+gboolean
+fu_efivar_set_data (const gchar *guids, const gchar *name, const guint8 *data,
+		     gsize sz, guint32 attr, GError **error)
+{
+	efi_guid_t guid;
+	efi_str_to_guid(guids, &guid);
+
+	if (efi_set_variable(guid, name, data, sz, attr) != 0) {
+		g_prefix_error (error, "failed to write data to efivar: ");
+		return FALSE;
+	}
+
+	/* success */
+	return TRUE;
+}
 
 /**
  * fu_efivar_delete:
@@ -75,24 +125,91 @@ fu_efivar_space_used (GError **error)
  * Since: 1.4.0
  **/
 gboolean
-fu_efivar_delete (const gchar *guid, const gchar *name, GError **error)
+fu_efivar_delete (const gchar *guids, const gchar *name, GError **error)
 {
-	g_autofree gchar *fn = NULL;
-	g_autoptr(GFile) file = NULL;
+	efi_guid_t guid;
+	efi_str_to_guid(guids, &guid);
 
-	g_return_val_if_fail (guid != NULL, FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	fn = fu_efivar_get_filename (guid, name);
-	file = g_file_new_for_path (fn);
-	if (!g_file_query_exists (file, NULL))
+	if (efi_del_variable (guid, name) == 0)
 		return TRUE;
-	if (!fu_efivar_set_immutable (fn, FALSE, NULL, error)) {
-		g_prefix_error (error, "failed to set %s as mutable: ", fn);
-		return FALSE;
+	return FALSE;
+}
+
+/**
+ * fu_efivar_delete_with_glob:
+ * @guid: Globally unique identifier
+ * @name_glob: Variable name
+ * @error: #GError
+ *
+ * Removes a group of variables from NVRAM
+ *
+ * Returns: %TRUE on success
+ *
+ * Since: 1.4.0
+ **/
+gboolean
+fu_efivar_delete_with_glob (const gchar *guids, const gchar *name_glob, GError **error)
+{
+	efi_guid_t guid_to_delete;
+	efi_str_to_guid(guids, &guid_to_delete);
+
+	efi_guid_t *guid = NULL;
+	gchar *name = NULL;
+
+	gboolean rv = FALSE;
+
+	while (efi_get_next_variable_name (&guid, &name)) {
+		if (memcmp(&guid_to_delete, guid, sizeof(guid)) == 0) {
+			if (fu_common_fnmatch (name, name_glob)) {
+				rv = fu_efivar_delete(guids, name, error);
+				if (!rv) {
+					break;
+				}
+			}
+		}
 	}
-	return g_file_delete (file, NULL, error);
+	return rv;
+}
+
+static gboolean
+fu_efivar_exists_guid (const gchar *guids)
+{
+	efi_guid_t *guid = NULL;
+	gchar *name = NULL;
+	efi_guid_t test;
+	efi_str_to_guid(guids, &test);
+
+	while (efi_get_next_variable_name (&guid, &name)) {
+		if (memcmp(&test, guid, sizeof(test)) == 0) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * fu_efivar_exists:
+ * @guid: Globally unique identifier
+ * @name: (nullable): Variable name
+ *
+ * Test if a variable exists
+ *
+ * Returns: %TRUE on success
+ *
+ * Since: 1.4.0
+ **/
+gboolean
+fu_efivar_exists (const gchar *guids, const gchar *name)
+{
+	g_return_val_if_fail (guids != NULL, FALSE);
+
+	/* any name */
+	if (name == NULL)
+		return fu_efivar_exists_guid (guids);
+
+	if (!fu_efivar_get_data (guids, name, NULL, NULL, NULL, NULL))
+		return FALSE;
+	return TRUE;
 }
 
 /**
@@ -111,77 +228,119 @@ fu_efivar_delete (const gchar *guid, const gchar *name, GError **error)
  * Since: 1.4.0
  **/
 gboolean
-fu_efivar_get_data (const gchar *guid, const gchar *name, guint8 **data,
+fu_efivar_get_data (const gchar *guids, const gchar *name, guint8 **data,
 		       gsize *data_sz, guint32 *attr, GError **error)
 {
-#ifndef _WIN32
-	gssize attr_sz;
-	gssize data_sz_tmp;
-	guint32 attr_tmp;
-	guint64 sz;
-	g_autofree gchar *fn = NULL;
-	g_autoptr(GFile) file = NULL;
-	g_autoptr(GFileInfo) info = NULL;
-	g_autoptr(GInputStream) istr = NULL;
+	efi_guid_t guid;
+	efi_str_to_guid(guids, &guid);
+	
+	if (efi_get_variable (guid, name, data, data_sz, attr) < 0)
+		return FALSE;
+	return TRUE;
+}
+
+/**
+ * fu_efivar_get_data_bytes:
+ * @guid: Globally unique identifier
+ * @name: Variable name
+ * @attr: (nullable): Attributes
+ * @error: (nullable): optional return location for an error
+ *
+ * Gets the data from a UEFI variable in NVRAM
+ *
+ * Returns: (transfer full): a #GBytes, or %NULL
+ *
+ * Since: 1.5.0
+ **/
+GBytes *
+fu_efivar_get_data_bytes (const gchar *guid,
+			  const gchar *name,
+			  guint32 *attr,
+			  GError **error)
+{
+	guint8 *data = NULL;
+	gsize datasz = 0;
+
+	g_return_val_if_fail (guid != NULL, NULL);
+	g_return_val_if_fail (name != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	if (!fu_efivar_get_data (guid, name, &data, &datasz, attr, error))
+		return NULL;
+	return g_bytes_new_take (data, datasz);
+}
+
+/**
+ * fu_efivar_get_names:
+ * @guid: Globally unique identifier
+ * @error: (nullable): optional return location for an error
+ *
+ * Gets the list of names where the GUID matches. An error is set if there are
+ * no names matching the GUID.
+ *
+ * Returns: (transfer container) (element-type utf8): array of names
+ *
+ * Since: 1.4.7
+ **/
+GPtrArray *
+fu_efivar_get_names (const gchar *guids, GError **error)
+{
+	const gchar *name_guid;
+	g_autoptr(GPtrArray) names = g_ptr_array_new_with_free_func (g_free);
+
+	/* find names with matching GUID */
+	efi_guid_t *guid = NULL;
+	gchar *name = NULL;
+	efi_guid_t test;
+	efi_str_to_guid(guids, &test);
+
+	while (efi_get_next_variable_name (&guid, &name)) {
+		if (memcmp(&test, guid, sizeof(test)) == 0) {
+			g_ptr_array_add (names, g_strdup (name));
+		}
+	}
+
+	/* nothing found */
+	if (names->len == 0) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     G_IO_ERROR_NOT_FOUND,
+			     "no names for GUID %s", guids);
+		return NULL;
+	}
+
+	/* success */
+	return g_steal_pointer (&names);
+}
+
+/**
+ * fu_efivar_set_data_bytes:
+ * @guid: globally unique identifier
+ * @name: variable name
+ * @bytes: data blob
+ * @attr: attributes
+ * @error: (nullable): optional return location for an error
+ *
+ * Sets the data to a UEFI variable in NVRAM
+ *
+ * Returns: %TRUE on success
+ *
+ * Since: 1.5.0
+ **/
+gboolean
+fu_efivar_set_data_bytes (const gchar *guid, const gchar *name, GBytes *bytes,
+			  guint32 attr, GError **error)
+{
+	gsize bufsz = 0;
+	const guint8 *buf;
 
 	g_return_val_if_fail (guid != NULL, FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
+	g_return_val_if_fail (bytes != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* open file as stream */
-	fn = fu_efivar_get_filename (guid, name);
-	file = g_file_new_for_path (fn);
-	istr = G_INPUT_STREAM (g_file_read (file, NULL, error));
-	if (istr == NULL)
-		return FALSE;
-	info = g_file_input_stream_query_info (G_FILE_INPUT_STREAM (istr),
-					       G_FILE_ATTRIBUTE_STANDARD_SIZE,
-					       NULL, error);
-	if (info == NULL) {
-		g_prefix_error (error, "failed to get stream info: ");
-		return FALSE;
-	}
-
-	/* get total stream size */
-	sz = g_file_info_get_attribute_uint64 (info, G_FILE_ATTRIBUTE_STANDARD_SIZE);
-	if (sz < 4) {
-		g_set_error (error,
-			     G_IO_ERROR,
-			     G_IO_ERROR_INVALID_DATA,
-			     "efivars file too small: %" G_GUINT64_FORMAT, sz);
-		return FALSE;
-	}
-
-	/* read out the attributes */
-	attr_sz = g_input_stream_read (istr, &attr_tmp, sizeof(attr_tmp), NULL, error);
-	if (attr_sz == -1) {
-		g_prefix_error (error, "failed to read attr: ");
-		return FALSE;
-	}
-	if (attr != NULL)
-		*attr = attr_tmp;
-
-	/* read out the data */
-	data_sz_tmp = sz - sizeof(attr_tmp);
-	if (data_sz != NULL)
-		*data_sz = data_sz_tmp;
-	if (data != NULL) {
-		g_autofree guint8 *data_tmp = g_malloc0 (data_sz_tmp);
-		if (!g_input_stream_read_all (istr, data_tmp, data_sz_tmp,
-					      NULL, NULL, error)) {
-			g_prefix_error (error, "failed to read data: ");
-			return FALSE;
-		}
-		*data = g_steal_pointer (&data_tmp);
-	}
-	return TRUE;
-#else
-	g_set_error_literal (error,
-			     FWUPD_ERROR,
-			     FWUPD_ERROR_NOT_SUPPORTED,
-			     "efivarfs not currently supported on Windows");
-	return FALSE;
-#endif
+	buf = g_bytes_get_data (bytes, &bufsz);
+	return fu_efivar_set_data (guid, name, buf, bufsz, attr, error);
 }
 
 /**
@@ -219,4 +378,19 @@ fu_efivar_secure_boot_enabled_full (GError **error)
 			     FWUPD_ERROR_NOT_FOUND,
 			     "SecureBoot is not enabled");
 	return FALSE;
+}
+
+/**
+ * fu_efivar_secure_boot_enabled:
+ *
+ * Determines if secure boot was enabled
+ *
+ * Returns: %TRUE on success
+ *
+ * Since: 1.4.0
+ **/
+gboolean
+fu_efivar_secure_boot_enabled (void)
+{
+	return fu_efivar_secure_boot_enabled_full (NULL);
 }
