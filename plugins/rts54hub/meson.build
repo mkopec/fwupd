@@ -12,8 +12,6 @@ shared_module('fu_plugin_rts54hub',
   sources : [
     'fu-rts54hub-device.c',
     'fu-rts54hub-rtd21xx-device.c',
-    'fu-rts54hub-rtd21xx-background.c',
-    'fu-rts54hub-rtd21xx-foreground.c',
     'fu-plugin-rts54hub.c',
   ],
   include_directories : [
