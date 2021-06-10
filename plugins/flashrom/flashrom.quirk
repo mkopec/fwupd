@@ -44,6 +44,13 @@ FlashromProgrammer=lspcon_i2c_spi
 Name=PS175
 Vendor=Parade
 
-# Tuxedo InifinityBook S15 Gen6
+# Tuxedo InifinityBook S15 Gen6 - System firmware
 [60f53465-e8fc-5122-b79b-f7b03f063037]
 Plugin=flashrom
+Flags=unlock-required
+
+# Tuxedo InifinityBook S15 Gen6 - Embedded Controller firmware
+[60f53465-e8fc-5122-b79b-f7b03f063037]
+Plugin=flashrom
+FlashromProgrammer=tuxec
+Name=Tuxedo EC
