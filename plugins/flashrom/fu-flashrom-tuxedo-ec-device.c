@@ -35,6 +35,27 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 	fu_device_add_icon (FU_DEVICE (self), "computer");
 }
 
+fu_flashrom_lspcon_i2c_spi_device_probe (FuDevice *device, GError **error)
+{
+	FuFlashromTuxedoEcDevice *self = FU_FLASHROM_TUXEDO_EC_DEVICE (device);
+	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
+	FuDeviceClass *klass =
+		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
+
+	/* FuFlashromDevice->probe */
+	if (!klass->probe (device, error))
+		return FALSE;
+
+	if (g_strcmp0 (fu_flashrom_device_get_programmer_name (flashrom_device),
+		       "tuxedo") != 0) {
+		g_set_error_literal (error,
+				     FWUPD_ERROR,
+				     FWUPD_ERROR_NOT_SUPPORTED,
+				     "invalid programmer");
+		return FALSE;
+	}
+}
+
 static gboolean
 fu_flashrom_tuxedo_ec_device_set_version (FuDevice *device, GError **error)
 {
@@ -66,16 +87,6 @@ fu_flashrom_tuxedo_ec_device_prepare (FuDevice *device,
 	g_autofree gchar *firmware_orig = NULL;
 	g_autofree gchar *localstatedir = NULL;
 	g_autofree gchar *basename = NULL;
-
-	FuFlashromDevice *parent = FU_FLASHROM_DEVICE (device);
-	if (g_strcmp0 (fu_flashrom_device_get_programmer_name (parent),
-		       "tuxec") != 0) {
-		g_set_error_literal (error,
-				     FWUPD_ERROR,
-				     FWUPD_ERROR_NOT_SUPPORTED,
-				     "invalid programmer");
-		return FALSE;
-	}
 
 	/* if the original firmware doesn't exist, grab it now */
 	basename = g_strdup_printf ("flashrom-%s.bin", fu_device_get_id (device));
@@ -184,10 +195,4 @@ fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
 	klass_device->reload = fu_flashrom_tuxedo_ec_device_set_version;
-}
-
-FuDevice *
-fu_flashrom_tuxedo_ec_device_new (void)
-{
-	return FU_DEVICE (g_object_new (FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE, NULL));
 }
