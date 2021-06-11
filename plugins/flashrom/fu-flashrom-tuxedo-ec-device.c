@@ -37,6 +37,7 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 
 fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
+	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
@@ -52,6 +53,7 @@ fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 				     "invalid programmer");
 		return FALSE;
 	}
+	return TRUE;
 }
 
 static gboolean
