@@ -192,6 +192,7 @@ static void
 fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 {
 	FuDeviceClass *klass_device = FU_DEVICE_CLASS (klass);
+	klass_device->probe = fu_flashrom_tuxedo_ec_device_probe;
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
 	klass_device->reload = fu_flashrom_tuxedo_ec_device_set_version;
