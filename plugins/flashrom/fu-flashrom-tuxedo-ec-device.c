@@ -42,6 +42,8 @@ fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
+	g_debug ("Probing tuxedo_ec");
+
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
 		return FALSE;

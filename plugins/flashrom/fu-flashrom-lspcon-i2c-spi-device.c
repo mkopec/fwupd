@@ -43,7 +43,7 @@ struct flashrom_layout {
 
 static const struct romentry ENTRIES_TEMPLATE[6] = {
 	{ .start = 0x00002, .end = 0x00003, .included = FALSE, .name = "FLAG" },
-	{ .start = 0x10000, .end = 0x1ffff, .included = FALSE, .name = "PAR1" },
+{ .start = 0x10000, .end = 0x1ffff, .included = FALSE, .name = "PAR1" },
 	{ .start = 0x20000, .end = 0x2ffff, .included = FALSE, .name = "PAR2" },
 	{ .start = 0x15000, .end = 0x15002, .included = FALSE, .name = "VER1" },
 	{ .start = 0x25000, .end = 0x25002, .included = FALSE, .name = "VER2" },
@@ -91,6 +91,8 @@ fu_flashrom_lspcon_i2c_spi_device_probe (FuDevice *device, GError **error)
 	g_autoptr(GRegex) regex = NULL;
 	g_autoptr(GMatchInfo) info = NULL;
 	const gchar *path = NULL;
+
+	g_debug ("Probing lspcon");
 
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
