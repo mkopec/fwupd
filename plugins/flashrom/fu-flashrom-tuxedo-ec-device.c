@@ -35,6 +35,7 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 	fu_device_add_icon (FU_DEVICE (self), "computer");
 }
 
+static gboolean
 fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
 	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
