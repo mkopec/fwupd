@@ -35,10 +35,8 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 	fu_device_add_icon (FU_DEVICE (self), "computer");
 }
 
-fu_flashrom_lspcon_i2c_spi_device_probe (FuDevice *device, GError **error)
+fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
-	FuFlashromTuxedoEcDevice *self = FU_FLASHROM_TUXEDO_EC_DEVICE (device);
-	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
@@ -95,6 +93,7 @@ fu_flashrom_tuxedo_ec_device_prepare (FuDevice *device,
 	if (!fu_common_mkdir_parent (firmware_orig, error))
 		return FALSE;
 	if (!g_file_test (firmware_orig, G_FILE_TEST_EXISTS)) {
+		FuFlashromDevice *parent = FU_FLASHROM_DEVICE (device);
 		struct flashrom_flashctx *flashctx = fu_flashrom_device_get_flashctx (parent);
 		gsize flash_size = fu_flashrom_device_get_flash_size (parent);
 		g_autofree guint8 *newcontents = g_malloc0 (flash_size);
