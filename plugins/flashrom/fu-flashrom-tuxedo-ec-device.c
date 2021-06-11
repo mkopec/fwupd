@@ -42,14 +42,12 @@ fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
-	g_debug ("Probing tuxedo_ec");
-
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
 		return FALSE;
 
 	if (g_strcmp0 (fu_flashrom_device_get_programmer_name (flashrom_device),
-		       "tuxedo") != 0) {
+		       "tuxec") != 0) {
 		g_set_error_literal (error,
 				     FWUPD_ERROR,
 				     FWUPD_ERROR_NOT_SUPPORTED,

@@ -92,8 +92,6 @@ fu_flashrom_lspcon_i2c_spi_device_probe (FuDevice *device, GError **error)
 	g_autoptr(GMatchInfo) info = NULL;
 	const gchar *path = NULL;
 
-	g_debug ("Probing lspcon");
-
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
 		return FALSE;
