@@ -23,6 +23,7 @@ G_DEFINE_TYPE (FuFlashromTuxedoEcDevice, fu_flashrom_tuxedo_ec_device,
 static void
 fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 {
+	g_debug ("Initializing Tuxedo EC device");
 	fu_device_add_flag (FU_DEVICE (self), FWUPD_DEVICE_FLAG_INTERNAL);
 	fu_device_add_flag (FU_DEVICE (self), FWUPD_DEVICE_FLAG_UPDATABLE);
 	fu_device_add_flag (FU_DEVICE (self), FWUPD_DEVICE_FLAG_NEEDS_REBOOT);
