@@ -96,6 +96,7 @@ fu_flashrom_device_set_quirk_kv (FuDevice *device,
 	}
 	if (g_strcmp0 (key, "FlashromProgrammer") == 0) {
 		fu_flashrom_device_set_programmer_name (FU_FLASHROM_DEVICE (device), value);
+		g_debug ("Adding programmer %s", value);
 		return TRUE;
 	}
 	g_set_error_literal (error,
