@@ -39,6 +39,7 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 static gboolean
 fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
+	return TRUE;
 	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
@@ -85,8 +86,9 @@ fu_flashrom_tuxedo_ec_device_set_version (FuDevice *device, GError **error)
 static gboolean
 fu_flashrom_tuxedo_ec_device_setup (FuDevice *device, GError **error)
 {
-	g_debug ("Setup(FuFlashromTuxedoEcDevice");
 	g_autofree gchar *instance_id = NULL;
+
+	g_debug ("Setup(FuFlashromTuxedoEcDevice");
 	instance_id = g_strdup_printf ("embedded-controller-firmware");
 	fu_device_add_instance_id (device, instance_id);
 
