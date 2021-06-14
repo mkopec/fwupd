@@ -39,11 +39,11 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 static gboolean
 fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
+	g_debug ("Probe(FuFlashromTuxedoEcDevice");
 	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
-	g_debug ("Probe(FuFlashromTuxedoEcDevice");
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
 		return FALSE;
@@ -208,15 +208,10 @@ static void
 fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 {
 	FuDeviceClass *klass_device = FU_DEVICE_CLASS (klass);
+	g_debug ("Initialixing tuxedo ec device class");
 	klass_device->probe = fu_flashrom_tuxedo_ec_device_probe;
 	klass_device->setup = fu_flashrom_tuxedo_ec_device_setup;
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
 	klass_device->reload = fu_flashrom_tuxedo_ec_device_set_version;
-}
-
-FuDevice *
-fu_flashrom_tuxedo_ec_device_new (void)
-{
-	return FU_DEVICE (g_object_new (FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE, NULL));
 }
