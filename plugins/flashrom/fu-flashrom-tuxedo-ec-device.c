@@ -39,7 +39,6 @@ fu_flashrom_tuxedo_ec_device_init (FuFlashromTuxedoEcDevice *self)
 static gboolean
 fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 {
-	return TRUE;
 	FuFlashromDevice *flashrom_device = FU_FLASHROM_DEVICE (device);
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
