@@ -43,6 +43,7 @@ fu_flashrom_tuxedo_ec_device_probe (FuDevice *device, GError **error)
 	FuDeviceClass *klass =
 		FU_DEVICE_CLASS (fu_flashrom_tuxedo_ec_device_parent_class);
 
+	g_debug ("Probe(FuFlashromTuxedoEcDevice");
 	/* FuFlashromDevice->probe */
 	if (!klass->probe (device, error))
 		return FALSE;
@@ -195,6 +196,7 @@ static void
 fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 {
 	FuDeviceClass *klass_device = FU_DEVICE_CLASS (klass);
+	g_debug ("Init(FuFlashromTuxedoEcDevice");
 	klass_device->probe = fu_flashrom_tuxedo_ec_device_probe;
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
