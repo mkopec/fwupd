@@ -208,7 +208,6 @@ static void
 fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 {
 	FuDeviceClass *klass_device = FU_DEVICE_CLASS (klass);
-	g_debug ("Initialixing tuxedo ec device class");
 	klass_device->probe = fu_flashrom_tuxedo_ec_device_probe;
 	klass_device->setup = fu_flashrom_tuxedo_ec_device_setup;
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;

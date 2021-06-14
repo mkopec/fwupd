@@ -45,9 +45,9 @@ Name=PS175
 Vendor=Parade
 
 # Tuxedo InifinityBook S15 Gen6 - System firmware
-#[60f53465-e8fc-5122-b79b-f7b03f063037]
-#Plugin=flashrom
-#Flags=unlock-required
+# [60f53465-e8fc-5122-b79b-f7b03f063037]
+# Plugin=flashrom
+# Flags=unlock-required
 
 # Tuxedo InifinityBook S15 Gen6 - Embedded Controller firmware
 [60f53465-e8fc-5122-b79b-f7b03f063037]
