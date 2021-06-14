@@ -195,7 +195,7 @@ fu_plugin_coldplug (FuPlugin *plugin, GError **error)
 	fu_plugin_device_add (plugin, device);
 
 	g_autoptr(FuDevice) tuxedo_ec_device = fu_flashrom_tuxedo_ec_device_new ();
-	if (fu_flashrom_tuxedo_ec_device_probe (tuxedo_ec_device, error)) {
+	if (tuxedo_ec_device->probe (tuxedo_ec_device, error)) {
 		fu_plugin_device_add (plugin, tuxedo_ec_device);
 	}
 
