@@ -52,5 +52,6 @@ Vendor=Parade
 # Tuxedo InifinityBook S15 Gen6 - Embedded Controller firmware
 [60f53465-e8fc-5122-b79b-f7b03f063037]
 Plugin=flashrom
+GType = FuFlashromTuxedoEcDevice
 FlashromProgrammer=tuxec
 Name=Tuxedo EC

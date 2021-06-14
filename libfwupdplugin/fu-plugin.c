@@ -1253,7 +1253,6 @@ fu_plugin_add_device_gtype (FuPlugin *self, GType device_gtype)
 {
 	FuPluginPrivate *priv = GET_PRIVATE (self);
 
-	g_debug ("Adding device gtype");
 	/* create as required */
 	if (priv->device_gtypes == NULL)
 		priv->device_gtypes = g_array_new (FALSE, FALSE, sizeof(GType));
