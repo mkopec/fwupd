@@ -83,6 +83,16 @@ fu_flashrom_tuxedo_ec_device_set_version (FuDevice *device, GError **error)
 }
 
 static gboolean
+fu_flashrom_tuxedo_ec_device_setup (FuDevice *device, GError **error)
+{
+	g_debug ("Setup(FuFlashromTuxedoEcDevice");
+	instance_id = g_strdup_printf ("embedded-controller-firmware");
+	fu_device_add_instance_id (device, instance_id);
+
+	return fu_flashrom_tuxedo_ec_device_set_version (device, error);
+}
+
+static gboolean
 fu_flashrom_tuxedo_ec_device_prepare (FuDevice *device,
 				     FwupdInstallFlags flags,
 				     GError **error)
@@ -196,9 +206,15 @@ static void
 fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 {
 	FuDeviceClass *klass_device = FU_DEVICE_CLASS (klass);
-	g_debug ("Init(FuFlashromTuxedoEcDevice");
 	klass_device->probe = fu_flashrom_tuxedo_ec_device_probe;
+	klass_device->setup = fu_flashrom_tuxedo_ec_device_setup;
 	klass_device->prepare = fu_flashrom_tuxedo_ec_device_prepare;
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
 	klass_device->reload = fu_flashrom_tuxedo_ec_device_set_version;
+}
+
+FuDevice *
+fu_flashrom_tuxedo_ec_device_new (void)
+{
+	return FU_DEVICE (g_object_new (FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE, NULL));
 }
