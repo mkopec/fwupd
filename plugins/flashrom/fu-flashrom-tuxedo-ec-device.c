@@ -214,3 +214,9 @@ fu_flashrom_tuxedo_ec_device_class_init (FuFlashromTuxedoEcDeviceClass *klass)
 	klass_device->write_firmware = fu_flashrom_tuxedo_ec_device_write_firmware;
 	klass_device->reload = fu_flashrom_tuxedo_ec_device_set_version;
 }
+
+FuDevice *
+fu_flashrom_tuxedo_ec_device_new (void)
+{
+	return FU_DEVICE (g_object_new (FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE, NULL));
+}

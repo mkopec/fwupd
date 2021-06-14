@@ -43,7 +43,6 @@ fu_plugin_init (FuPlugin *plugin)
 	fu_plugin_add_rule (plugin, FU_PLUGIN_RULE_CONFLICTS, "coreboot"); /* obsoleted */
 	fu_plugin_add_flag (plugin, FWUPD_PLUGIN_FLAG_REQUIRE_HWID);
 	fu_plugin_add_device_gtype (plugin, FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE);
-	g_type_ensure (FU_TYPE_FLASHROM_TUXEDO_EC_DEVICE);
 	fu_plugin_add_device_gtype (plugin, FU_TYPE_FLASHROM_LSPCON_I2C_SPI_DEVICE);
 	fu_context_add_udev_subsystem (ctx, "i2c");
 	fu_context_add_quirk_key (ctx, "FlashromProgrammer");
@@ -194,6 +193,12 @@ fu_plugin_coldplug (FuPlugin *plugin, GError **error)
 
 	/* success */
 	fu_plugin_device_add (plugin, device);
+
+	g_autoptr(FuDevice) tuxedo_ec_device = fu_flashrom_tuxedo_ec_device_new ();
+	if (fu_flashrom_tuxedo_ec_defvice_probe (tuxedo_ec_device, error)) {
+		fu_plugin_device_add (plugin, tuxedo_ec_device);
+	}
+
 	return TRUE;
 }
 
