@@ -86,6 +86,7 @@ static gboolean
 fu_flashrom_tuxedo_ec_device_setup (FuDevice *device, GError **error)
 {
 	g_debug ("Setup(FuFlashromTuxedoEcDevice");
+	g_autofree gchar *instance_id = NULL;
 	instance_id = g_strdup_printf ("embedded-controller-firmware");
 	fu_device_add_instance_id (device, instance_id);
 
