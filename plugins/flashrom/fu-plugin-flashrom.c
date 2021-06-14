@@ -167,34 +167,34 @@ fu_plugin_flashrom_device_set_hwids (FuPlugin *plugin, FuDevice *device)
 	}
 }
 
-//gboolean
-//fu_plugin_coldplug (FuPlugin *plugin, GError **error)
-//{
-//	FuContext *ctx = fu_plugin_get_context (plugin);
-//	const gchar *dmi_vendor;
-//	g_autoptr(FuDevice) device = fu_flashrom_internal_device_new ();
-//
-//	fu_device_set_context (device, ctx);
-//	fu_device_set_name (device, fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_PRODUCT_NAME));
-//	fu_device_set_vendor (device, fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_MANUFACTURER));
-//
-//	/* use same VendorID logic as with UEFI */
-//	dmi_vendor = fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_BIOS_VENDOR);
-//	if (dmi_vendor != NULL) {
-//		g_autofree gchar *vendor_id = g_strdup_printf ("DMI:%s", dmi_vendor);
-//		fu_device_add_vendor_id (FU_DEVICE (device), vendor_id);
-//	}
-//	fu_plugin_flashrom_device_set_version (plugin, device);
-//	fu_plugin_flashrom_device_set_hwids (plugin, device);
-//	fu_plugin_flashrom_device_set_bios_info (plugin, device);
-//	fu_flashrom_device_set_programmer_name (FU_FLASHROM_DEVICE (device), "internal");
-//	if (!fu_device_setup (device, error))
-//		return FALSE;
-//
-//	/* success */
-//	fu_plugin_device_add (plugin, device);
-//	return TRUE;
-//}
+gboolean
+fu_plugin_coldplug (FuPlugin *plugin, GError **error)
+{
+	FuContext *ctx = fu_plugin_get_context (plugin);
+	const gchar *dmi_vendor;
+	g_autoptr(FuDevice) device = fu_flashrom_internal_device_new ();
+
+	fu_device_set_context (device, ctx);
+	fu_device_set_name (device, fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_PRODUCT_NAME));
+	fu_device_set_vendor (device, fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_MANUFACTURER));
+
+	/* use same VendorID logic as with UEFI */
+	dmi_vendor = fu_context_get_hwid_value (ctx, FU_HWIDS_KEY_BIOS_VENDOR);
+	if (dmi_vendor != NULL) {
+		g_autofree gchar *vendor_id = g_strdup_printf ("DMI:%s", dmi_vendor);
+		fu_device_add_vendor_id (FU_DEVICE (device), vendor_id);
+	}
+	fu_plugin_flashrom_device_set_version (plugin, device);
+	fu_plugin_flashrom_device_set_hwids (plugin, device);
+	fu_plugin_flashrom_device_set_bios_info (plugin, device);
+	fu_flashrom_device_set_programmer_name (FU_FLASHROM_DEVICE (device), "internal");
+	if (!fu_device_setup (device, error))
+		return FALSE;
+
+	/* success */
+	fu_plugin_device_add (plugin, device);
+	return TRUE;
+}
 
 gboolean
 fu_plugin_startup (FuPlugin *plugin, GError **error)
