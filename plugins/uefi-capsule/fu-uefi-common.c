@@ -36,7 +36,12 @@ fu_uefi_bootmgr_get_suffix (GError **error)
 	};
 	g_autofree gchar *sysfsfwdir = fu_common_get_path (FU_PATH_KIND_SYSFSDIR_FW);
 	g_autofree gchar *sysfsefidir = g_build_filename (sysfsfwdir, "efi", NULL);
+#ifdef __linux__
 	firmware_bits = fu_uefi_read_file_as_uint64 (sysfsefidir, "fw_platform_size");
+#else
+	firmware_bits = 64;
+#endif
+
 	if (firmware_bits == 0) {
 		g_set_error (error,
 			     G_IO_ERROR,
@@ -81,8 +86,10 @@ fu_uefi_get_built_app_path (GError **error)
 	const gchar *suffix;
 	g_autofree gchar *source_path = NULL;
 	g_autofree gchar *prefix = NULL;
+#ifdef __linux__
 	if (fu_efivar_secure_boot_enabled ())
 		extension = ".signed";
+#endif
 	suffix = fu_uefi_bootmgr_get_suffix (error);
 	if (suffix == NULL)
 		return NULL;

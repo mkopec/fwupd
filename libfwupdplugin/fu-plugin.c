@@ -342,7 +342,7 @@ fu_plugin_open (FuPlugin *self, const gchar *filename, GError **error)
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (filename != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	priv->module = g_module_open (filename, 0);
 	if (priv->module == NULL) {
@@ -1392,7 +1392,7 @@ fu_plugin_runner_backend_device_added (FuPlugin *self, FuDevice *device, GError 
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))
@@ -1454,7 +1454,7 @@ fu_plugin_runner_backend_device_changed (FuPlugin *self, FuDevice *device, GErro
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))
@@ -1585,7 +1585,7 @@ fu_plugin_runner_device_created (FuPlugin *self, FuDevice *device, GError **erro
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))
@@ -1627,7 +1627,7 @@ fu_plugin_runner_verify (FuPlugin *self,
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))
@@ -1718,7 +1718,7 @@ fu_plugin_runner_activate (FuPlugin *self, FuDevice *device, GError **error)
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* final check */
 	flags = fu_device_get_flags (device);
@@ -1763,7 +1763,7 @@ fu_plugin_runner_unlock (FuPlugin *self, FuDevice *device, GError **error)
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* final check */
 	flags = fu_device_get_flags (device);
@@ -1816,7 +1816,7 @@ fu_plugin_runner_update (FuPlugin *self,
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED)) {
@@ -1885,7 +1885,7 @@ fu_plugin_runner_clear_results (FuPlugin *self, FuDevice *device, GError **error
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))
@@ -1938,7 +1938,7 @@ fu_plugin_runner_get_results (FuPlugin *self, FuDevice *device, GError **error)
 
 	g_return_val_if_fail (FU_IS_PLUGIN (self), FALSE);
 	g_return_val_if_fail (FU_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 
 	/* not enabled */
 	if (fu_plugin_has_flag (self, FWUPD_PLUGIN_FLAG_DISABLED))

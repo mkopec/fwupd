@@ -874,7 +874,6 @@ fu_device_list_get_by_id (FuDeviceList *self, const gchar *device_id, GError **e
 
 	g_return_val_if_fail (FU_IS_DEVICE_LIST (self), NULL);
 	g_return_val_if_fail (device_id != NULL, NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* multiple things matched */
 	item = fu_device_list_find_by_id (self, device_id, &multiple_matches);

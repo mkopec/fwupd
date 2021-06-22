@@ -37,12 +37,14 @@ fu_efivar_delete_impl (const gchar *guid, const gchar *name, GError **error)
 
 	if (efi_del_variable (guidt, name) == 0)
 		return TRUE;
-
+#ifdef __linux__
 	g_set_error (error,
 		     G_IO_ERROR,
 		     G_IO_ERROR_INVALID_DATA,
 		     "failed to delete efivar %s", name);
 	return FALSE;
+#endif
+	return TRUE;
 }
 
 gboolean
