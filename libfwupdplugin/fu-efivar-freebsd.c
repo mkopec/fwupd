@@ -100,8 +100,17 @@ fu_efivar_get_data_impl (const gchar *guid, const gchar *name, guint8 **data,
 			 gsize *data_sz, guint32 *attr, GError **error)
 {
 	efi_guid_t guidt;
+	static guint8 buf = NULL;
+	guint8 *ret_buf = g_malloc(1024*32);
+
 	efi_str_to_guid (guid, &guidt);
-	return (efi_get_variable (guidt, name, data, data_sz, attr) != 0);
+	if(efi_get_variable (guidt, name, buf, data_sz, attr) != 0)
+		return FALSE;
+
+	memcpy(ret_buf, buf, sizeof(ret_buf));
+	data = &ret_buf;
+
+	return TRUE;
 }
 
 
