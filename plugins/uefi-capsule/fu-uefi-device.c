@@ -595,11 +595,9 @@ fu_uefi_device_write_firmware (FuDevice *device,
 				       "FWUPDATE_DEBUG_LOG", error))
 			return FALSE;
 	}
-#ifdef __linux__
 	/* set the blob header shared with fwupd.efi */
 	if (!fu_uefi_device_write_update_info (self, fn, varname, self->fw_class, error))
 		return FALSE;
-#endif
 	/* update the firmware before the bootloader runs */
 	if (fu_device_get_metadata_boolean (device, "RequireShimForSecureBoot"))
 		flags |= FU_UEFI_BOOTMGR_FLAG_USE_SHIM_FOR_SB;
@@ -609,10 +607,8 @@ fu_uefi_device_write_firmware (FuDevice *device,
 	/* some legacy devices use the old name to deduplicate boot entries */
 	if (fu_device_has_custom_flag (device, "use-legacy-bootmgr-desc"))
 		bootmgr_desc = "Linux-Firmware-Updater";
-#ifdef __linux__
 	if (!fu_uefi_bootmgr_bootnext (device, esp_path, bootmgr_desc, flags, error))
 		return FALSE;
-#endif
 
 	/* success! */
 	return TRUE;
