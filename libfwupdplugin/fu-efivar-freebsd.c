@@ -101,7 +101,7 @@ fu_efivar_get_data_impl (const gchar *guid, const gchar *name, guint8 **data,
 {
 	efi_guid_t guidt;
 	gboolean success;
-	guint8 buf[1024*32];
+	guint8 *buf;
 	gssize sz = 0;
 
 	efi_str_to_guid (guid, &guidt);
