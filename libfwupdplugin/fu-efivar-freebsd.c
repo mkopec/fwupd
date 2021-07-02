@@ -114,6 +114,14 @@ fu_efivar_get_data_impl (const gchar *guid, const gchar *name, guint8 **data,
 		*data = g_steal_pointer(&ret_buf);
 	}
 
+	if (!success) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     G_IO_ERROR_FAILED,
+			     "failed to read efivar: %s",
+			     name);
+	}
+
 	return success;
 }
 
