@@ -459,13 +459,11 @@ static gboolean
 fu_uefi_check_asset (FuDevice *device, GError **error)
 {
 	g_autofree gchar *source_app = fu_uefi_get_built_app_path (error);
-#ifdef __linux__
 	if (source_app == NULL) {
 		if (fu_efivar_secure_boot_enabled ())
 			g_prefix_error (error, "missing signed bootloader for secure boot: ");
 		return FALSE;
 	}
-#endif
 	return TRUE;
 }
 

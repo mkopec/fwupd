@@ -86,10 +86,8 @@ fu_uefi_get_built_app_path (GError **error)
 	const gchar *suffix;
 	g_autofree gchar *source_path = NULL;
 	g_autofree gchar *prefix = NULL;
-#ifdef __linux__
 	if (fu_efivar_secure_boot_enabled ())
 		extension = ".signed";
-#endif
 	suffix = fu_uefi_bootmgr_get_suffix (error);
 	if (suffix == NULL)
 		return NULL;
