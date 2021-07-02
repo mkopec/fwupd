@@ -93,6 +93,7 @@ fu_plugin_list_find_by_name (FuPluginList *self, const gchar *name, GError **err
 {
 	g_return_val_if_fail (FU_IS_PLUGIN_LIST (self), NULL);
 	g_return_val_if_fail (name != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 	for (guint i = 0; i < self->plugins->len; i++) {
 		FuPlugin *plugin = g_ptr_array_index (self->plugins, i);
 		if (g_strcmp0 (fu_plugin_get_name (plugin), name) == 0)

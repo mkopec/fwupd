@@ -534,7 +534,7 @@ fu_device_poll (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* subclassed */
 	if (klass->poll != NULL) {
@@ -2166,7 +2166,7 @@ fu_device_ensure_id (FuDevice *self, GError **error)
 	g_autofree gchar *device_id = NULL;
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already set */
 	if (priv->device_id_valid)
@@ -3009,7 +3009,7 @@ fu_device_write_firmware (FuDevice *self,
 	g_autofree gchar *str = NULL;
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->write_firmware == NULL) {
@@ -3202,7 +3202,7 @@ fu_device_detach (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->detach == NULL)
@@ -3229,7 +3229,7 @@ fu_device_attach (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->attach == NULL)
@@ -3256,7 +3256,7 @@ fu_device_reload (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->reload == NULL)
@@ -3285,7 +3285,7 @@ fu_device_prepare (FuDevice *self, FwupdInstallFlags flags, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->prepare == NULL)
@@ -3314,7 +3314,7 @@ fu_device_cleanup (FuDevice *self, FwupdInstallFlags flags, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* no plugin-specific method */
 	if (klass->cleanup == NULL)
@@ -3362,6 +3362,8 @@ fu_device_open (FuDevice *self, GError **error)
 	FuDevicePrivate *priv = GET_PRIVATE (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	/* already open */
 	g_atomic_int_inc (&priv->open_refcount);
 	if (priv->open_refcount > 1)
@@ -3432,7 +3434,7 @@ fu_device_close (FuDevice *self, GError **error)
 	FuDevicePrivate *priv = GET_PRIVATE (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* not yet open */
 	if (priv->open_refcount == 0) {
@@ -3476,7 +3478,7 @@ fu_device_probe (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already done */
 	if (priv->done_probe)
@@ -3508,7 +3510,7 @@ fu_device_rescan (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* remove all GUIDs */
 	g_ptr_array_set_size (fu_device_get_instance_ids (self), 0);
@@ -3577,7 +3579,7 @@ fu_device_setup (FuDevice *self, GError **error)
 	GPtrArray *children;
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* already done */
 	if (priv->done_setup)
@@ -3622,7 +3624,7 @@ fu_device_activate (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* subclassed */
 	if (klass->activate != NULL) {
@@ -3757,7 +3759,7 @@ fu_device_bind_driver (FuDevice *self,
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
 	g_return_val_if_fail (subsystem != NULL, FALSE);
 	g_return_val_if_fail (driver != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* not implemented */
 	if (klass->bind_driver == NULL) {
@@ -3793,7 +3795,7 @@ fu_device_unbind_driver (FuDevice *self, GError **error)
 	FuDeviceClass *klass = FU_DEVICE_GET_CLASS (self);
 
 	g_return_val_if_fail (FU_IS_DEVICE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* not implemented */
 	if (klass->unbind_driver == NULL) {

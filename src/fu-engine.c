@@ -619,7 +619,7 @@ fu_engine_unlock (FuEngine *self, const gchar *device_id, GError **error)
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (device_id != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the device exists */
 	device = fu_device_list_get_by_id (self->device_list, device_id, error);
@@ -660,7 +660,7 @@ fu_engine_modify_config (FuEngine *self, const gchar *key, const gchar *value, G
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check keys are valid */
 	if (!g_strv_contains (keys, key)) {
@@ -815,7 +815,7 @@ fu_engine_verify_update (FuEngine *self, const gchar *device_id, GError **error)
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (device_id != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the devices still exists */
 	device = fu_device_list_get_by_id (self->device_list, device_id, error);
@@ -1055,7 +1055,7 @@ fu_engine_verify (FuEngine *self, const gchar *device_id, GError **error)
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (device_id != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the id exists */
 	device = fu_device_list_get_by_id (self->device_list, device_id, error);
@@ -2131,7 +2131,7 @@ fu_engine_offline_setup (GError **error)
 	g_autofree gchar *symlink_target = fu_common_get_path (FU_PATH_KIND_LOCALSTATEDIR_PKG);
 	g_autofree gchar *trigger = fu_common_get_path (FU_PATH_KIND_OFFLINE_TRIGGER);
 
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* does already exist */
 	filename = fu_common_realpath (trigger, NULL);
@@ -2169,7 +2169,7 @@ fu_engine_offline_invalidate (GError **error)
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GFile) file1 = NULL;
 
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	file1 = g_file_new_for_path (trigger);
 	if (!g_file_query_exists (file1, NULL))
@@ -2497,7 +2497,7 @@ fu_engine_install (FuEngine *self,
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (XB_IS_NODE (component), FALSE);
 	g_return_val_if_fail (blob_cab != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* not in bootloader mode */
 	device = g_object_ref (fu_install_task_get_device (task));
@@ -2850,7 +2850,7 @@ fu_engine_activate (FuEngine *self, const gchar *device_id, GError **error)
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (device_id != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check the device exists */
 	device = fu_device_list_get_by_id (self->device_list, device_id, error);
@@ -3751,7 +3751,7 @@ fu_engine_update_metadata_bytes (FuEngine *self, const gchar *remote_id,
 	g_return_val_if_fail (remote_id != NULL, FALSE);
 	g_return_val_if_fail (bytes_raw != NULL, FALSE);
 	g_return_val_if_fail (bytes_sig != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* check remote is valid */
 	remote = fu_remote_list_get_by_id (self->remote_list, remote_id);
@@ -3889,7 +3889,7 @@ fu_engine_update_metadata (FuEngine *self, const gchar *remote_id,
 	g_return_val_if_fail (remote_id != NULL, FALSE);
 	g_return_val_if_fail (fd > 0, FALSE);
 	g_return_val_if_fail (fd_sig > 0, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* ensures the fd's are closed on error */
 	stream_fd = g_unix_input_stream_new (fd, TRUE);
@@ -5063,7 +5063,7 @@ fu_engine_get_upgrades (FuEngine *self,
 	device = fu_device_list_get_by_id (self->device_list, device_id, error);
 	if (device == NULL)
 		return NULL;
-#ifdef __linux__
+
 	/* don't show upgrades again until we reboot */
 	if (fu_device_get_update_state (device) == FWUPD_UPDATE_STATE_NEEDS_REBOOT) {
 		g_set_error_literal (error,
@@ -5072,7 +5072,7 @@ fu_engine_get_upgrades (FuEngine *self,
 				     "A reboot is pending");
 		return NULL;
 	}
-#endif
+
 	/* get all the releases for the device */
 	releases_tmp = fu_engine_get_releases_for_device (self, request, device, error);
 	if (releases_tmp == NULL)
@@ -5164,7 +5164,7 @@ fu_engine_clear_results (FuEngine *self, const gchar *device_id, GError **error)
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
 	g_return_val_if_fail (device_id != NULL, FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* find the device */
 	device = fu_engine_get_item_by_id_fallback_history (self, device_id, error);
@@ -6370,7 +6370,7 @@ fu_engine_load (FuEngine *self, FuEngineLoadFlags flags, GError **error)
 #endif
 
 	g_return_val_if_fail (FU_IS_ENGINE (self), FALSE);
-
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* avoid re-loading a second time if fu-tool or fu-util request to */
 	if (self->loaded)
